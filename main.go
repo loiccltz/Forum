@@ -31,10 +31,10 @@ func register(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	backend.InitDB()
-	fs := http.FileServer(http.Dir("../assets/"))
+	fs := http.FileServer(http.Dir("./frontend/public/"))
 	http.HandleFunc("/", home)
 	http.HandleFunc("/register", register)
-	http.Handle("frontend/public/css", http.StripPrefix("frontend/public/css", fs))
+	http.Handle("/public/", http.StripPrefix("/public/", fs))
 	http.Handle("frontend/public/js", http.StripPrefix("frontend/public/js", fs))
 	http.ListenAndServe("", nil)
 }
