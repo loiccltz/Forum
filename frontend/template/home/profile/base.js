@@ -1,4 +1,5 @@
 document.addEventListener("DOMContentLoaded", function () {
+    console.log("Script chargé et DOM prêt !");
     // Simuler les données utilisateur récupérées depuis une base de données ou une API
     const userData = {
         username: "Axel",
