@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profil Utilisateur</title>
+    <link rel="stylesheet" href="/frontend/public/css/profile/style.css"> <!-- Fichier CSS externe -->
+    <script defer src="/frontend/public/js/profile/base.js"></script> <!-- Fichier JavaScript externe -->
+</head>
+<body>
+    <header>
+        <h1>Profil de l'utilisateur</h1>
+    </header>
+    
+    <main>
+        <section class="profil">
+            <div class="avatar">
+                <img id="avatar" src="" alt="Avatar de l'utilisateur">
+            </div>
+            <div class="infos">
+                <h2 id="username">Nom d'utilisateur</h2>
+                <p>Membre depuis : <span id="member-since">...</span></p>
+                <p>Rang : <span id="rank">...</span></p>
+                <p>Messages : <span id="messages">...</span></p>
+                <p>Localisation : <span id="location">...</span></p>
+            </div>
+        </section>
+        
+        <section class="derniers-messages">
+            <h2>Derniers messages</h2>
+            <ul id="messages-list">
+                <!-- Les messages seront injectés ici par JavaScript -->
+            </ul>
+        </section>
+    </main>
+</body>
+</html>
