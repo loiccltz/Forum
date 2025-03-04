@@ -7,7 +7,7 @@ import (
 )
 
 
-func InitDB() *sql.DB {
+func InitDB(db *sql.DB) *sql.DB {
 	db, err := sql.Open("sqlite3", "./forum.db")
 	if err != nil {
 		fmt.Println("Erreur de connexion à la base de données :", err)
