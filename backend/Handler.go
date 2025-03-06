@@ -46,6 +46,7 @@ func RegisterHandler(db *sql.DB) http.HandlerFunc {
 	}
 }
 
+
 func LoginHandler(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == "GET" {
@@ -86,6 +87,21 @@ func LoginHandler(db *sql.DB) http.HandlerFunc {
 			fmt.Println("Utilisateur connecté :", email)
 
 			http.Redirect(w, r, "/", http.StatusSeeOther)
+		}
+	}
+}
+
+
+func ArticlesHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == "GET" {
+			tmpl, err := template.ParseFiles("frontend/template/home/article/index.html")
+			if err != nil {
+				http.Error(w, "Erreur lors du chargement de la page de connexion", http.StatusInternalServerError)
+				return
+			}
+			tmpl.Execute(w, nil)
+			return
 		}
 	}
 }

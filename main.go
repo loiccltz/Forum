@@ -34,6 +34,7 @@ func main() {
 
 	fs := http.FileServer(http.Dir("./frontend/public/"))
 	http.HandleFunc("/", home)
+	http.HandleFunc("/articles", backend.ArticlesHandler())
 	http.HandleFunc("/login", backend.LoginHandler(db))
 	http.HandleFunc("/register", backend.RegisterHandler(db))
 	http.Handle("/public/", http.StripPrefix("/public/", fs))
