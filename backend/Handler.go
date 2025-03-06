@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+	"strconv"
 )
 
 func RegisterHandler(db *sql.DB) http.HandlerFunc {
@@ -96,6 +97,145 @@ func ArticlesHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == "GET" {
 			tmpl, err := template.ParseFiles("frontend/template/home/article/index.html")
+			if err != nil {
+				http.Error(w, "Erreur lors du chargement de la page de connexion", http.StatusInternalServerError)
+				return
+			}
+			tmpl.Execute(w, nil)
+			return
+		}
+	}
+}
+
+func CreatePostHandler(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if !IsAuthenticated(r) {
+			http.Error(w, "Vous devez être connecté pour créer un post", http.StatusUnauthorized)
+			return
+		}
+
+		if r.Method == "POST" {
+			err := r.ParseForm()
+			if err != nil {
+				http.Error(w, "Erreur lors du traitement du formulaire", http.StatusBadRequest)
+				return
+			}
+
+			title := r.FormValue("title")
+			content := r.FormValue("content")
+			sessionToken, _ := GetSessionToken(r)
+
+			var userID int
+			err = db.QueryRow("SELECT id FROM user WHERE id = (SELECT user_id FROM sessions WHERE token = ?)", sessionToken).Scan(&userID)
+			if err != nil {
+				http.Error(w, "Utilisateur non trouvé", http.StatusUnauthorized)
+				return
+			}
+
+			err = CreatePost(db, title, content, userID)
+			if err != nil {
+				http.Error(w, "Erreur lors de la création du post", http.StatusInternalServerError)
+				return
+			}
+
+			http.Redirect(w, r, "/", http.StatusSeeOther)
+		}
+	}
+}
+
+func AddCommentHandler(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if !IsAuthenticated(r) {
+			http.Error(w, "Vous devez être connecté pour commenter", http.StatusUnauthorized)
+			return
+		}
+
+		if r.Method == "POST" {
+			err := r.ParseForm()
+			if err != nil {
+				http.Error(w, "Erreur lors du traitement du formulaire", http.StatusBadRequest)
+				return
+			}
+
+			content := r.FormValue("content")
+			postIDStr := r.FormValue("post_id") 
+			postID, err := strconv.Atoi(postIDStr) 
+			if err != nil {
+				http.Error(w, "ID du post invalide", http.StatusBadRequest)
+				return
+			}
+
+			sessionToken, _ := GetSessionToken(r)
+
+			var userID int
+			err = db.QueryRow("SELECT id FROM user WHERE id = (SELECT user_id FROM sessions WHERE token = ?)", sessionToken).Scan(&userID)
+			if err != nil {
+				http.Error(w, "Utilisateur non trouvé", http.StatusUnauthorized)
+				return
+			}
+
+			err = AddComment(db, content, userID, postID) 
+			if err != nil {
+				http.Error(w, "Erreur lors de l'ajout du commentaire", http.StatusInternalServerError)
+				return
+			}
+
+			http.Redirect(w, r, fmt.Sprintf("/post?id=%d", postID), http.StatusSeeOther)
+		}
+	}
+}
+
+func LikePostHandler(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if !IsAuthenticated(r) {
+			http.Error(w, "Vous devez être connecté pour liker un post", http.StatusUnauthorized)
+			return
+		}
+
+		if r.Method == "POST" {
+			err := r.ParseForm()
+			if err != nil {
+				http.Error(w, "Erreur lors du traitement du formulaire", http.StatusBadRequest)
+				return
+			}
+
+			postIDStr := r.FormValue("post_id_like")
+			likeTypeStr := r.FormValue("like_type")
+			postID, err := strconv.Atoi(postIDStr)
+			if err != nil {
+				http.Error(w, "ID du post invalide", http.StatusBadRequest)
+				return
+			}
+			likeType, err := strconv.Atoi(likeTypeStr)
+			if err != nil || (likeType != 0 && likeType != 1) {
+				http.Error(w, "Type de like invalide", http.StatusBadRequest)
+				return
+			}
+
+			sessionToken, _ := GetSessionToken(r)
+
+			var userID int
+			err = db.QueryRow("SELECT id FROM user WHERE id = (SELECT user_id FROM sessions WHERE token = ?)", sessionToken).Scan(&userID)
+			if err != nil {
+				http.Error(w, "Utilisateur non trouvé", http.StatusUnauthorized)
+				return
+			}
+
+			err = LikePost(db, userID, postID, likeType)
+			if err != nil {
+				http.Error(w, "Erreur lors de l'ajout du like/dislike", http.StatusInternalServerError)
+				return
+			}
+
+			http.Redirect(w, r, fmt.Sprintf("/post?id=%d", postID), http.StatusSeeOther)
+		}
+	}
+}
+
+func ArticlesaddHandler(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == "GET" {
+			tmpl, err := template.ParseFiles("frontend/template/home/article/add.html")
 			if err != nil {
 				http.Error(w, "Erreur lors du chargement de la page de connexion", http.StatusInternalServerError)
 				return
