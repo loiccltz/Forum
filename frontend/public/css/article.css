@@ -1,0 +1,35 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    background-color: #f4f4f4;
+}
+
+.article {
+    background: white;
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.buttons {
+    margin-top: 10px;
+}
+
+.btn {
+    padding: 5px 10px;
+    margin-right: 10px;
+    border: none;
+    cursor: pointer;
+    border-radius: 3px;
+}
+
+.like {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.dislike {
+    background-color: #f44336;
+    color: white;
+}
