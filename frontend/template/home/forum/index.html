@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+        <meta charset="utf-8">
+        <meta nam="viewport" content="width=device-width, initial-scale=1">
+        <title>Tech Talks</title>
+        <link rel="stylesheet" href="/frontend/public/css/forum/style.css">
+    </head>
+    <body>
+        <header>
+            <div class="banner"></div>
+            <h1>Tech Talks</h1>
+        </div>
+    </header>
+    <div class="main-container">
+        <div class="content">
+          <div class="grille">
+            {{ range .Lists }}
+              <div class="grid-item">
+                <a href="/artiste?id={{ .Id }}">
+                  <img src="{{ .Image }}" alt="{{ .Name }}" />
+                </a>
+                <h2>{{ .Name }}</h2>
+              </div>
+            {{ end }}
+          </div>
+        </div>
+      </div>
+    </body>
+    </html>
