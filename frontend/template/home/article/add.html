@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Création d'un Post et Commentaire</title>
+    <link rel="stylesheet" href="../../../public/css/article.css">
+</head>
+<body>
+
+    <h1>Créer un Post</h1>
+    <form action="/create_post" method="POST">
+        <label for="title">Titre :</label>
+        <input type="text" id="title" name="title" required>
+        <br>
+        <label for="content">Contenu :</label>
+        <textarea id="content" name="content" required></textarea>
+        <br>
+        <button type="submit">Créer le Post</button>
+    </form>
+
+    <hr>
+
+    <h1>Ajouter un Commentaire</h1>
+    <form action="/add_comment" method="POST">
+        <label for="post_id">ID du Post :</label>
+        <input type="number" id="post_id" name="post_id" required>
+        <br>
+        <label for="content">Commentaire :</label>
+        <textarea id="content" name="content" required></textarea>
+        <br>
+        <button type="submit">Ajouter un Commentaire</button>
+    </form>
+
+    <hr>
+
+    <h1>Likes / Dislikes</h1>
+    <form action="/like_dislike" method="POST">
+        <label for="post_id_like">ID du Post :</label>
+        <input type="number" id="post_id_like" name="post_id_like" required>
+        <br>
+        <label for="like_type">Type de Like (1 pour Like, 0 pour Dislike) :</label>
+        <input type="number" id="like_type" name="like_type" min="0" max="1" required>
+        <br>
+        <button type="submit">Envoyer Like / Dislike</button>
+    </form>
+
+</body>
+</html>
