@@ -23,7 +23,7 @@ header .banner h1 {     /*titre du bandeau du haut */
 }
 
 body {      /*corps du forum */
-  padding-top: 70px;        
+  padding-top: 60px;        
 }
 
 
@@ -129,7 +129,7 @@ body {      /*corps du forum */
 .home-button {     /*bouton de retour à l'accueil */
   position: fixed;          
   top: 15px;
-  left: 10px;
+  left: 5px;
   background-color: #2a475e;
   color: white;
   border: none;
@@ -149,7 +149,7 @@ body {      /*corps du forum */
 }
 
 .home-button img {     /*image du bouton de retour à l'accueil */
-  max-width: 30px;          
+  max-width: 300px;          
   max-height: 30px;
 }
 
@@ -166,7 +166,7 @@ body {      /*corps du forum */
 .forum-button {     /*bouton de retour au forum */
   position: fixed;          
   top: 15px;
-  left: 55px;
+  left: 50px;
   background-color: #2a475e;
   color: white;
   border: none;
@@ -203,7 +203,7 @@ body {      /*corps du forum */
 .profil-button {      /*bouton de retour au profil */
   position: fixed;          
   top: 15px;
-  left: 702px;
+  right: 5px;
   background-color: #2a475e;
   color: white;
   border: none;
@@ -240,7 +240,7 @@ body {      /*corps du forum */
 .à-propos-button {      /*bouton de retour à la page à propos */
   position: fixed;          
   top: 15px;
-  left: 747px;
+  right: 50px;
   background-color: #2a475e;
   color: white;
   border: none;
@@ -270,4 +270,33 @@ body {      /*corps du forum */
   font-size: 1.1rem;
   text-transform: uppercase;
   letter-spacing: 1px;
+}
+
+.post-container {    /* conteneur des posts */
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.post-item {    /* élément des posts */
+  background-color: #2a475e;
+  color: rgb(255, 255, 255);
+  padding: 10px;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.post-item:hover {    /* effet au survol */
+  transform: scale(1.005);
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.3);
+}
+
+.post-item p {    /* texte des posts en blanc */
+  color: white;
+}
+
+.h2 {    /* titres en blanc */
+  color: white;
 }
