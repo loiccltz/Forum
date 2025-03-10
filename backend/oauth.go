@@ -7,6 +7,7 @@ import (
     "os"
 )
 
+
 //google
 var googleOAuthConfig = &oauth2.Config{
     ClientID:     os.Getenv("GOOGLE_CLIENT_ID"),
@@ -16,8 +17,8 @@ var googleOAuthConfig = &oauth2.Config{
     Endpoint:     google.Endpoint,
 }
 
-//facebook
-var githubOAuthConfig = &oauth2.Config{
+//gituhb
+var GithubOAuthConfig = &oauth2.Config{
     ClientID:     os.Getenv("GITHUB_CLIENT_ID"),
     ClientSecret: os.Getenv("GITHUB_CLIENT_SECRET"),
     RedirectURL:  "http://localhost:8080/auth/github/callback",
@@ -26,4 +27,4 @@ var githubOAuthConfig = &oauth2.Config{
 }
 
 
-//mettre le reste
+//mettre le reste git facebook

@@ -41,6 +41,8 @@ func main() {
 	http.HandleFunc("/create_post", backend.CreatePostHandler(db))
 	http.HandleFunc("/add_comment", backend.AddCommentHandler(db))
 	http.HandleFunc("/like_dislike", backend.LikePostHandler(db)) 
+	http.HandleFunc("/auth/google", backend.GoogleLoginHandler())
+	http.HandleFunc("/auth/google/callback", backend.GoogleCallbackHandler(db))
 	http.HandleFunc("/profile", backend.AdminHandler(db))
 	http.Handle("/public/", http.StripPrefix("/public/", fs))
 	http.Handle("frontend/public/js", http.StripPrefix("frontend/public/js", fs))
