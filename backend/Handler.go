@@ -263,6 +263,7 @@ func AdminHandler(db *sql.DB) http.HandlerFunc {
 func GoogleLoginHandler() http.HandlerFunc {
 	return func (w http.ResponseWriter, r *http.Request)  {
 		url := googleOAuthConfig.AuthCodeURL("randomstate")
+		fmt.Println(url)
 		// randomstate c'est pour prevenir des attaque de type CSRF
 		http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 	} 

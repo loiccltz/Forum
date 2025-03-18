@@ -26,6 +26,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 var db *sql.DB
 
 func main() {
+	backend.OauthInit()
 	errs := godotenv.Load()
 	if errs != nil {
 	  log.Fatal("Error loading .env file")
@@ -43,7 +44,7 @@ func main() {
 	http.Handle("/", backend.LimitRequest(http.HandlerFunc(home)))
 	http.HandleFunc("/articles", backend.ArticlesHandler())
 	http.HandleFunc("/login", backend.LoginHandler(db))
-	http.HandleFunc("/register", backend.RegisterHandler(db))
+	http.HandleFunc("/register/test", backend.RegisterHandler(db))
 	http.HandleFunc("/add", backend.ArticlesaddHandler(db))
 	http.HandleFunc("/create_post", backend.CreatePostHandler(db))
 	http.HandleFunc("/add_comment", backend.AddCommentHandler(db))
