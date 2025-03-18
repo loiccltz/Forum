@@ -5,10 +5,11 @@ services:
     build: .
     ports:
       - "8080:8080"
-  depends_on:
-      - db
-  environment:
-    DATABASE_URL: "mysql://user:password@tcp(db:3306)/forum"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: "user:password@tcp(db:3306)/forum"
 
   db:
     image: mysql:8
@@ -19,9 +20,14 @@ services:
       MYSQL_PASSWORD: password
       MYSQL_DATABASE: forum
     ports:
-      - "3306:3306"
-  volumes:
-    - db-data:/var/lib/mysql
+      - "3307:3306"
+    volumes:
+      - db-data:/var/lib/mysql
+    healthcheck: # Ajout d'un healthcheck pour s'assurer que MySQL est prêt avant de démarrer app
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
 
 volumes:
   db-data:
