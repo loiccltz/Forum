@@ -20,7 +20,7 @@ services:
       MYSQL_PASSWORD: password
       MYSQL_DATABASE: forum
     ports:
-      - "3307:3306"
+      - "3306:3306"
     volumes:
       - db-data:/var/lib/mysql
     healthcheck: # Ajout d'un healthcheck pour s'assurer que MySQL est prêt avant de démarrer app
