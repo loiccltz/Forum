@@ -7,6 +7,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"os"
 )
 
 func home(w http.ResponseWriter, r *http.Request) {
@@ -26,17 +27,12 @@ var db *sql.DB
 func main() {
 	var err error
 	db, err = sql.Open("sqlite3", "./forum.db")
+	fmt.Println("Client ID:", os.Getenv("GOOGLE_CLIENT_ID"))
+    fmt.Println("Client Secret:", os.Getenv("GOOGLE_CLIENT_SECRET"))
 	if err != nil {
 		log.Fatal("Erreur lors de l'ouverture de la base de données:", err)
 	}
 	backend.InitDB(db)
-
-	go func() {
-		log.Println(" Redirection HTTP → HTTPS active")
-		log.Fatal(http.ListenAndServe(":8080", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			http.Redirect(w, r, "https://localhost"+r.RequestURI, http.StatusMovedPermanently)
-		})))
-	}()
 
 	fs := http.FileServer(http.Dir("./frontend/public/"))
 	http.Handle("/", backend.LimitRequest(http.HandlerFunc(home)))

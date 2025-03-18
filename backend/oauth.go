@@ -12,7 +12,7 @@ import (
 var googleOAuthConfig = &oauth2.Config{
     ClientID:     os.Getenv("GOOGLE_CLIENT_ID"),
     ClientSecret: os.Getenv("GOOGLE_CLIENT_SECRET"),
-    RedirectURL:  "http://localhost:8080/auth/google/callback",
+    RedirectURL:  "https://localhost/auth/google/callback",
     Scopes:       []string{"email", "profile"},
     Endpoint:     google.Endpoint,
 }
@@ -21,7 +21,7 @@ var googleOAuthConfig = &oauth2.Config{
 var GithubOAuthConfig = &oauth2.Config{
     ClientID:     os.Getenv("GITHUB_CLIENT_ID"),
     ClientSecret: os.Getenv("GITHUB_CLIENT_SECRET"),
-    RedirectURL:  "http://localhost:8080/auth/github/callback",
+    RedirectURL:  "https://localhost:8080/auth/github/callback",
     Scopes:       []string{"user:email"},
     Endpoint:     github.Endpoint,
 }

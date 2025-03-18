@@ -11,5 +11,5 @@ func StartSecureServer(handler http.Handler) {
 		Handler: handler,
 	}
 
-	log.Fatal(server.ListenAndServeTLS("server.crt", "server.key"))
+	log.Fatal(server.ListenAndServeTLS("localhost+2.pem", "localhost+2-key.pem"))
 }
