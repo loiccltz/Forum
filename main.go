@@ -31,14 +31,10 @@ func main() {
 	if errs != nil {
 	  log.Fatal("Error loading .env file")
 	}
-	var err error
-	db, err = sql.Open("sqlite3", "./forum.db")
+	
 	fmt.Println("Client ID:", os.Getenv("GOOGLE_CLIENT_ID"))
     fmt.Println("Client Secret:", os.Getenv("GOOGLE_CLIENT_SECRET"))
-	if err != nil {
-		log.Fatal("Erreur lors de l'ouverture de la base de données:", err)
-	}
-	backend.InitDB(db)
+	backend.InitDB()
 
 	fs := http.FileServer(http.Dir("./frontend/public/"))
 	http.Handle("/", backend.LimitRequest(http.HandlerFunc(home)))

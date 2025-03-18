@@ -250,7 +250,7 @@ func ArticlesaddHandler(db *sql.DB) http.HandlerFunc {
 func AdminHandler(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == "GET" {
-			tmpl, err := template.ParseFiles("frontend/template/home/profile/index.html")
+			tmpl, err := template.ParseFiles("frontend/template/home/profile/profil.html")
 			if err != nil {
 				http.Error(w, "Erreur lors du chargement de la page de connexion", http.StatusInternalServerError)
 				return
