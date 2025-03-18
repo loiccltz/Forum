@@ -12,7 +12,7 @@ import (
 )
 
 func home(w http.ResponseWriter, r *http.Request) {
-	var fileName = "./frontend/template/home/index.html"
+	var fileName = "./frontend/template/home/forum/accueil.html"
 	t, err := template.ParseFiles(fileName)
 	if err != nil {
 		fmt.Println("Erreur pendant le parsing", err)
