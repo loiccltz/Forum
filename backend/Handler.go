@@ -1,9 +1,11 @@
 package backend
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"html/template"
+	"io"
 	"net/http"
 	"strconv"
 )
@@ -46,7 +48,6 @@ func RegisterHandler(db *sql.DB) http.HandlerFunc {
 		}
 	}
 }
-
 
 func LoginHandler(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -91,7 +92,6 @@ func LoginHandler(db *sql.DB) http.HandlerFunc {
 		}
 	}
 }
-
 
 func ArticlesHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -158,8 +158,8 @@ func AddCommentHandler(db *sql.DB) http.HandlerFunc {
 			}
 
 			content := r.FormValue("content")
-			postIDStr := r.FormValue("post_id") 
-			postID, err := strconv.Atoi(postIDStr) 
+			postIDStr := r.FormValue("post_id")
+			postID, err := strconv.Atoi(postIDStr)
 			if err != nil {
 				http.Error(w, "ID du post invalide", http.StatusBadRequest)
 				return
@@ -174,7 +174,7 @@ func AddCommentHandler(db *sql.DB) http.HandlerFunc {
 				return
 			}
 
-			err = AddComment(db, content, userID, postID) 
+			err = AddComment(db, content, userID, postID)
 			if err != nil {
 				http.Error(w, "Erreur lors de l'ajout du commentaire", http.StatusInternalServerError)
 				return
@@ -243,5 +243,58 @@ func ArticlesaddHandler(db *sql.DB) http.HandlerFunc {
 			tmpl.Execute(w, nil)
 			return
 		}
+	}
+}
+
+func AdminHandler(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == "GET" {
+			tmpl, err := template.ParseFiles("frontend/template/home/profile/index.html")
+			if err != nil {
+				http.Error(w, "Erreur lors du chargement de la page de connexion", http.StatusInternalServerError)
+				return
+			}
+			tmpl.Execute(w, nil)
+			return
+		}
+	}
+}
+
+func GoogleLoginHandler() http.HandlerFunc {
+	return func (w http.ResponseWriter, r *http.Request)  {
+		url := googleOAuthConfig.AuthCodeURL("randomstate")
+		fmt.Println(url)
+		// randomstate c'est pour prevenir des attaque de type CSRF
+		http.Redirect(w, r, url, http.StatusTemporaryRedirect)
+	} 
+}
+
+func GoogleCallbackHandler(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		// recup le code d'autorisation 
+		code := r.URL.Query().Get("code")
+
+		token, err := googleOAuthConfig.Exchange(context.Background(), code)
+		// echange du code recup plus haut avec un token
+		if err != nil {
+			http.Error(w, "Erreur lors de l'échange du token", http.StatusInternalServerError)
+			return
+		}
+
+		// on recupere les info de l'user avec le token
+		client := googleOAuthConfig.Client(context.Background(), token)
+		resp, err := client.Get("https://www.googleapis.com/oauth2/v2/userinfo")
+		if err != nil {
+			http.Error(w, "Erreur lors de la récupération des infos utilisateur", http.StatusInternalServerError)
+			return
+		}
+		defer resp.Body.Close() // fermer la requete ( bonne pratique )
+
+		userData, _ := io.ReadAll(resp.Body)
+		fmt.Println("Données utilisateur :", string(userData))
+
+		
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 	}
 }

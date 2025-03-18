@@ -11,7 +11,7 @@ import (
 )
 
 func Register(db *sql.DB, username, email, password string) error {
-	// Vérifier si l'utilisateur existe déjà
+	
 	var exists bool
 	err := db.QueryRow("SELECT EXISTS(SELECT 1 FROM user WHERE email = ?)", email).Scan(&exists)
 	if err != nil {
@@ -21,13 +21,11 @@ func Register(db *sql.DB, username, email, password string) error {
 		return errors.New("cet email est déjà utilisé")
 	}
 
-	// Hasher le mot de passe avant de l'insérer
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return errors.New("erreur lors du hashage du mot de passe")
 	}
 
-	// Insérer l'utilisateur dans la base de données
 	_, err = db.Exec("INSERT INTO user (username, email, password) VALUES (?, ?, ?)", username, email, hashedPassword)
 	if err != nil {
 		return err
