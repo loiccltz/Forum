@@ -166,7 +166,7 @@ body {      /*corps du forum */
 .forum-button {     /*bouton de retour au forum */
   position: fixed;          
   top: 15px;
-  left: 50px;
+  left: 53px;
   background-color: #2a475e;
   color: white;
   border: none;
