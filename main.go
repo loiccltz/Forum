@@ -52,6 +52,8 @@ func main() {
 	http.HandleFunc("/auth/google", backend.GoogleLoginHandler())
 	http.HandleFunc("/auth/google/callback", backend.GoogleCallbackHandler(db))
 	http.HandleFunc("/profile", backend.AdminHandler(db))
+	http.HandleFunc("/upload", backend.UploadImage)
+	http.Handle("/uploads/", http.StripPrefix("/uploads/", http.FileServer(http.Dir("uploads"))))
 	http.Handle("/public/", http.StripPrefix("/public/", fs))
 	http.Handle("frontend/public/js", http.StripPrefix("frontend/public/js", fs))
 
@@ -62,6 +64,7 @@ func main() {
 	fmt.Println("🔹 Ajouter un article     : https://localhost/add")
 	fmt.Println("🔹 Voir les articles      : https://localhost/articles")
 	fmt.Println("🔹 Création de post       : https://localhost/create_post")
+	fmt.Println("🔹 Ajouter une image      : https://localhost/upload")
 	fmt.Println("🔹 Ajouter un commentaire : https://localhost/add_comment")
 	fmt.Println("🔹 Like/Dislike un post   : https://localhost/like_dislike")
 	fmt.Println("🔹 Profil utilisateur     : https://localhost/profile")

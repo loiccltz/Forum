@@ -124,6 +124,7 @@ func CreatePostHandler(db *sql.DB) http.HandlerFunc {
 			title := r.FormValue("title")
 			content := r.FormValue("content")
 			sessionToken, _ := GetSessionToken(r)
+			imageURL := r.FormValue("image_url")
 
 			var userID int
 			err = db.QueryRow("SELECT id FROM user WHERE id = (SELECT user_id FROM sessions WHERE token = ?)", sessionToken).Scan(&userID)
@@ -132,7 +133,7 @@ func CreatePostHandler(db *sql.DB) http.HandlerFunc {
 				return
 			}
 
-			err = CreatePost(db, title, content, userID)
+			err = CreatePost(db, title, content, imageURL, userID)
 			if err != nil {
 				http.Error(w, "Erreur lors de la création du post", http.StatusInternalServerError)
 				return
