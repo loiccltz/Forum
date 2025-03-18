@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"github.com/joho/godotenv"
 )
 
 func home(w http.ResponseWriter, r *http.Request) {
@@ -25,6 +26,10 @@ func home(w http.ResponseWriter, r *http.Request) {
 var db *sql.DB
 
 func main() {
+	errs := godotenv.Load()
+	if errs != nil {
+	  log.Fatal("Error loading .env file")
+	}
 	var err error
 	db, err = sql.Open("sqlite3", "./forum.db")
 	fmt.Println("Client ID:", os.Getenv("GOOGLE_CLIENT_ID"))
