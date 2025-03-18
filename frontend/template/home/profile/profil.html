@@ -6,12 +6,28 @@
     <title>Profil Utilisateur</title>
     <link rel="stylesheet" href="/frontend/public/css/profile/style.css">
     <script defer src="base.js"></script>
+    <style>
+        .bouton-image {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            width: 40px;
+            height: 40px;
+            background: url('Forum/frontend/public/rsc/home/home.png') no-repeat center center;
+            background-size: cover;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
+    <button class="bouton-image" onclick="alert('Bouton cliqué !')"></button>
+</body>
+
     <header>
         <h1>Profil de l'utilisateur</h1>
     </header>
-    
+
     <main>
         <section class="profil">
             <div class="avatar">
@@ -25,7 +41,7 @@
                 <p>Localisation : <span id="location">...</span></p>
             </div>
         </section>
-        
+
         <section class="derniers-messages">
             <h2>Derniers messages</h2>
             <ul id="messages-list">
