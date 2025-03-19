@@ -271,3 +271,8 @@ body {      /*corps du forum */
   text-transform: uppercase;
   letter-spacing: 1px;
 }
+
+.titre-categories {
+  color: white;
+  font-weight: bold;
+}

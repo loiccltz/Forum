@@ -35,7 +35,7 @@ body {      /*corps du forum */
 .sidebar {      /*barre latérale */
   width: 240px;
   background-color: #1d2029;
-  color: white;
+  color: rgb(255, 255, 255);
   padding: 20px;
   box-sizing: border-box;
 }
@@ -65,7 +65,7 @@ body {      /*corps du forum */
 
 .sidebar-button {    /*bouton de recherche */
   background-color: #2a475e;
-  color: white;
+  color: rgb(255, 255, 255);
   border: none;
   border-radius: 5px;
   padding: 5px;
@@ -297,6 +297,15 @@ body {      /*corps du forum */
   color: white;
 }
 
-.h2 {    /* titres en blanc */
+.titre-categories {
+  margin: 10px 0;
+  font-size: 1.5rem;
   color: white;
+  font-weight: bold;
+}
+
+
+.catégorie img {      /*image du bouton de retour à la page à propos */
+  max-width: 300px;          
+  max-height: 300px;
 }

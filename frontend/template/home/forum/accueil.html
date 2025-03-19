@@ -28,7 +28,7 @@
     <aside class="sidebar">
       <h2>Filtrer les catégories</h2>
       <form method="GET" action="/">
-        <label for="filter-name">Nom</label>
+        <label for="filter-name">Nom de la catégorie</label>
         
         <input 
           type="text" 
@@ -38,7 +38,7 @@
           placeholder="Rechercher une catégorie" />
           <button type="submit" class="sidebar-button">Rechercher</button>
         <label for="filter-componant">Composants</label>
-        <select id="filter-componant" name="year" class="sidebar-input">
+        <select id="filter-componant" name="composants" class="sidebar-input">
           <option value="">Tout les composants</option>
           <option value="Carte Mère">Carte Mère</option>
           <option value="Carte Graphique">Carte Graphique</option>
@@ -68,17 +68,25 @@
     </aside>
 </body>
 <div class="content">
-  <h2>Derniers Posts</h2>
-  <div class="content"></div>
-      <div class="grille">
-        {{ range .Posts }}
-          <div class="grid-item">
-            <a href="/post?id={{ .Id }}"></a>
-              <img src="{{ .Image }}" alt="{{ .Title }}" />
-            </a>
-            <h2>{{ .Title }}</h2> 
-            <p>{{ .Content }}</p>
-            
+  <h2 class="titre-categories">Tous les composants</h2>
+  <div class="grille">
+      <div class="grid-item">
+        <a href="/post?id={{ .Id }}"></a>
+          <img src="{{ .Image }}" alt="{{ .catégorie }}" />
+        </a>
+        <h2>{{ .Title }}</h2> 
+        <p>{{ .Content }}</p>
+</div>
+</div>
+  <div class="content">
+    <h2 class="titre-categories">Toutes les marques</h2>
+    <div class="grille">
+        <div class="grid-item">
+          <a href="/post?id={{ .Id }}"></a>
+            <img src="{{ .Image }}" alt="{{ .catégorie }}" />
+          </a>
+          <h2>{{ .catégories }}</h2> 
+          <p>{{ .Content }}</p>
 </div>
 </div>
 </body>
