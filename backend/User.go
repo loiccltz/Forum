@@ -2,18 +2,26 @@ package backend
 
 import (
 	"database/sql"
-	"fmt"
 )
 
+
+type User struct {
+	ID           int
+	Username     string
+	Email        string
+	Password     string // hashé
+	SessionToken string
+	// ajouter le reste de nos propriété
+}
+
+//insere un nouvel utilisateur dans la base de donnees
 func InsertUser(db *sql.DB, username, email, password string) error {
-	statement, err := db.Prepare("INSERT INTO user (username, email, password) VALUES (?, ?, ?)")
+	statement, err := db.Prepare("INSERT INTO user (username, email, password) VALUES (?, ?, ?, ?)")
 	if err != nil {
-		fmt.Println("Erreur de préparation de la requête :", err)
 		return err
 	}
+	defer statement.Close()
+	
 	_, err = statement.Exec(username, email, password)
-	if err != nil {
-		fmt.Println("Erreur d'exécution de la requête :", err)
-	}
 	return err
 }

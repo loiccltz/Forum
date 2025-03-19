@@ -8,7 +8,7 @@ import (
 
 // InitDB initialise la connexion à la base de données MySQL
 func InitDB() *sql.DB {
-	// Remplace ces valeurs avec celles d'InfinityFree
+	// AWS
 	dsn := "admin:hardpassword@tcp(forum.cjoaea48gf89.eu-north-1.rds.amazonaws.com:3306)/forum"
 
 	db, err := sql.Open("mysql", dsn)
@@ -20,7 +20,7 @@ func InitDB() *sql.DB {
 	// Vérifie que la connexion fonctionne
 	err = db.Ping()
 	if err != nil {
-		fmt.Println("Impossible de contacter MySQL :", err)
+		fmt.Println("Impossible de contacter la bdd :", err)
 		return nil
 	}
 
@@ -30,7 +30,8 @@ func InitDB() *sql.DB {
 			id INT AUTO_INCREMENT PRIMARY KEY,
 			username VARCHAR(255) NOT NULL,
 			email VARCHAR(255) NOT NULL,
-			password VARCHAR(255) NOT NULL
+			password VARCHAR(255) NOT NULL,
+			session_token VARCHAR(64) NOT NULL
 		)
 	`)
 	if err != nil {
