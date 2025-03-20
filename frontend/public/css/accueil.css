@@ -218,6 +218,18 @@ body {      /*corps du forum */
   gap: 10px;                
 }
 
+      .profil-bouton-image {
+          position: fixed;
+          top: 10px;
+          left: 10px;
+          width: 40px;
+          height: 40px;
+          background: url('Forum/frontend/public/rsc/home/home.png') no-repeat center center;
+          background-size: cover;
+          border: none;
+          cursor: pointer;
+      }
+
 .profil-button:hover {      /*bouton de retour au profil */
   background-color: #004E7C;
 }

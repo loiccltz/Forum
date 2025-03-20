@@ -10,25 +10,29 @@
     <div class="banner">
       <h1>Tech-Talks</h1>
     </div>
-    <button class="home-button">
+    
+    <button class="home-button" onclick="window.location.href='/home'">
       <img src="/frontend/public/rsc/home/home.png" alt="accueil" />
     </button>  
-    <button class="forum-button">
+  
+    <button class="forum-button" onclick="window.location.href='/forum'">
       <img src="/frontend/public/rsc/forum/forum.png" alt="forum" /> 
     </button>
-    <button class="profil-button">
+  
+    <a class="profil-button" href='/profil'>
       <img src="/frontend/public/rsc/profil/pp profil sans compte-1.png" alt="profil" />
+    </a>
+  
+    <button class="à-propos-button" onclick="window.location.href='/à-propos'">
+      <img src="/frontend/public/rsc/à propos/download-1.png.png" alt="à propos" />
     </button>
-    <button class="à-propos-button">
-      <img src="/frontend/public/rsc/à propos/download-1.png.png" alt="à propos" href="/à-propos" />
-    
   </header>
 
   <div class="main-container">
     <aside class="sidebar">
       <h2>Filtrer les catégories</h2>
       <form method="GET" action="/">
-        <label for="filter-name">Nom de la catégorie</label>
+        <label for="filter-name">Nom</label>
         
         <input 
           type="text" 
@@ -38,7 +42,7 @@
           placeholder="Rechercher une catégorie" />
           <button type="submit" class="sidebar-button">Rechercher</button>
         <label for="filter-componant">Composants</label>
-        <select id="filter-componant" name="composants" class="sidebar-input">
+        <select id="filter-componant" name="year" class="sidebar-input">
           <option value="">Tout les composants</option>
           <option value="Carte Mère">Carte Mère</option>
           <option value="Carte Graphique">Carte Graphique</option>
@@ -68,26 +72,14 @@
     </aside>
 </body>
 <div class="content">
-  <h2 class="titre-categories">Tous les composants</h2>
+  <h2 class="titre-categories">Dernier post</h2>
   <div class="grille">
       <div class="grid-item">
         <a href="/post?id={{ .Id }}"></a>
-          <img src="{{ .Image }}" alt="{{ .catégorie }}" />
+          <img src="{{ .Image }}" alt="{{ .Title }}" />
         </a>
         <h2>{{ .Title }}</h2> 
         <p>{{ .Content }}</p>
-</div>
-</div>
-  <div class="content">
-    <h2 class="titre-categories">Toutes les marques</h2>
-    <div class="grille">
-        <div class="grid-item">
-          <a href="/post?id={{ .Id }}"></a>
-            <img src="{{ .Image }}" alt="{{ .catégorie }}" />
-          </a>
-          <h2>{{ .catégories }}</h2> 
-          <p>{{ .Content }}</p>
-</div>
 </div>
 </body>
 </html>
