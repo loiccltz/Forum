@@ -2,16 +2,16 @@ package backend
 
 import (
 	"crypto/rand"
-	"encoding/hex"
 	"database/sql"
+	"encoding/hex"
 	"errors"
 	"fmt"
-	"golang.org/x/crypto/bcrypt"
 	"net/http"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 func Register(db *sql.DB, username, email, password string) error {
-	
 	var exists bool
 	err := db.QueryRow("SELECT EXISTS(SELECT 1 FROM user WHERE email = ?)", email).Scan(&exists)
 	if err != nil {
@@ -26,7 +26,15 @@ func Register(db *sql.DB, username, email, password string) error {
 		return errors.New("erreur lors du hashage du mot de passe")
 	}
 
-	_, err = db.Exec("INSERT INTO user (username, email, password) VALUES (?, ?, ?)", username, email, hashedPassword)
+	// Générer un token de session
+	token, err := GenerateSessionToken()
+	if err != nil {
+		return errors.New("erreur lors de la génération du token")
+	}
+
+	// Insérer l'utilisateur avec le token
+	_, err = db.Exec("INSERT INTO user (username, email, password, session_token) VALUES (?, ?, ?, ?)", 
+		username, email, hashedPassword, token)
 	if err != nil {
 		return err
 	}
@@ -36,36 +44,25 @@ func Register(db *sql.DB, username, email, password string) error {
 }
 
 func AuthenticateUser(db *sql.DB, email, password string) (string, error) {
-    if db == nil {
-        return "", errors.New("connexion à la base de données invalide")
-    }
-    
-    // Récupère l'utilisateur par email
-    user, err := GetUserByEmail(db, email)
-    if err != nil {
-        return "", errors.New("utilisateur non trouvé")
-    }
-    
-    // Vérifie le mot de passe
-    err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
-    if err != nil {
-        return "", errors.New("mot de passe incorrect")
-    }
-    
-    // Génère un token de session
-    token, err := GenerateSessionToken()
-    if err != nil {
-        return "", err
-    }
-    
-    // Met à jour le token de session dans la base de données
-    err = user.UpdateSessionToken(db, token)
-    if err != nil {
-        return "", err
-    }
-    
-    // Retourne le token pour que le handler puisse créer le cookie
-    return token, nil
+	if db == nil {
+		return "", errors.New("connexion à la base de données invalide")
+	}
+	
+	// Récupère l'utilisateur par email
+	user, err := GetUserByEmail(db, email)
+	if err != nil {
+		
+		return "", errors.New("utilisateur non trouvé")
+	}
+	
+	// Vérifie le mot de passe
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+	if err != nil {
+		return "", errors.New("mot de passe incorrect")
+	}
+
+	// Retourne le token de session existant
+	return user.SessionToken, nil
 }
 
 func GenerateSessionToken() (string, error) {
