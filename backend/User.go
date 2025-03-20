@@ -3,7 +3,6 @@ package backend
 import (
 	"database/sql"
 	"errors"
-	"fmt"
 )
 
 
@@ -38,17 +37,14 @@ func (u *User) UpdateSessionToken(db *sql.DB, token string) error {
 	return nil
 }
 
-// GetUserByEmail récupère un utilisateur par son email
-func GetUserByEmail(db *sql.DB, email string) (*User, error) {
-	user := &User{}
-	err := db.QueryRow("SELECT id, username, email, password, session_token FROM user WHERE email = ?", email).
-		Scan(&user.ID, &user.Username, &user.Email, &user.Password, &user.SessionToken)
-	
-	if err == sql.ErrNoRows {
-		return nil, errors.New("aucun utilisateur trouvé avec cet email")
-	} else if err != nil {
-		return nil, fmt.Errorf("erreur lors de la récupération de l'utilisateur : %v", err)
+func GetUserInfoByToken(db *sql.DB, token string) (*User, error) {
+	var user User
+	err := db.QueryRow("SELECT id, email, username FROM user WHERE session_token = ?", token).Scan(&user.ID, &user.Email, &user.Username)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, errors.New("utilisateur non trouvé")
+		}
+		return nil, err
 	}
-
-	return user, nil
+	return &user, nil
 }

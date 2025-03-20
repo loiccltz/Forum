@@ -43,27 +43,40 @@ func Register(db *sql.DB, username, email, password string) error {
 	return nil
 }
 
-func AuthenticateUser(db *sql.DB, email, password string) (string, error) {
-	if db == nil {
-		return "", errors.New("connexion à la base de données invalide")
-	}
-	
-	// Récupère l'utilisateur par email
-	user, err := GetUserByEmail(db, email)
+func Login(db *sql.DB, email, password string) (string, error) {
+	// Vérifier si l'email existe
+	var hashedPassword string
+	err := db.QueryRow("SELECT password FROM user WHERE email = ?", email).Scan(&hashedPassword)
 	if err != nil {
-		
-		return "", errors.New("utilisateur non trouvé")
-	}
-	
-	// Vérifie le mot de passe
-	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
-	if err != nil {
-		return "", errors.New("mot de passe incorrect")
+		if err == sql.ErrNoRows {
+			return "", errors.New("email ou mot de passe incorrect")
+		}
+		return "", err
 	}
 
-	// Retourne le token de session existant
-	return user.SessionToken, nil
+	// Comparer le mot de passe avec le hash stocké
+	err = bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
+	if err != nil {
+		return "", errors.New("email ou mot de passe incorrect")
+	}
+
+	// Générer un nouveau token de session
+	token, err := GenerateSessionToken()
+	if err != nil {
+		return "", errors.New("erreur lors de la génération du token")
+	}
+
+	// Mettre à jour le token de session dans la base de données
+	_, err = db.Exec("UPDATE user SET session_token = ? WHERE email = ?", token, email)
+	if err != nil {
+		return "", err
+	}
+
+	return token, nil
 }
+
+
+
 
 func GenerateSessionToken() (string, error) {
 	bytes := make([]byte, 32) // 64 caractères hexadecimaux

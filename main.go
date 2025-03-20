@@ -54,7 +54,7 @@ func main() {
 	http.Handle("/like_dislike", backend.LimitRequest(http.HandlerFunc(backend.LikePostHandler(db))))
 	http.Handle("/auth/google", backend.LimitRequest(http.HandlerFunc(backend.GoogleLoginHandler())))
 	http.Handle("/auth/google/callback", backend.LimitRequest(http.HandlerFunc(backend.GoogleCallbackHandler(db))))
-	http.Handle("/profile", backend.LimitRequest(http.HandlerFunc(backend.AdminHandler(db))))
+	http.Handle("/profile", backend.LimitRequest(http.HandlerFunc(backend.ProfileHandler(db))))
 	http.Handle("/upload", backend.LimitRequest(http.HandlerFunc(backend.UploadImage)))
 
 	http.Handle("/uploads/", http.StripPrefix("/uploads/", http.FileServer(http.Dir("uploads"))))

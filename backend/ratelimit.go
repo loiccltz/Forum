@@ -31,7 +31,7 @@ func LimitRequest(next http.Handler) http.Handler {
 		}
 		limiter.visits[ip] = recentRequests
 
-		if len(limiter.visits[ip]) >= 10 {
+		if len(limiter.visits[ip]) >= 100 {
 			http.Error(w, "⛔ Trop de requêtes, veuillez patienter.", http.StatusTooManyRequests)
 			return
 		}

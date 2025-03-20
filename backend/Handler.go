@@ -49,27 +49,6 @@ func RegisterHandler(db *sql.DB) http.HandlerFunc {
 	}
 }
 
-func LoginHandler(db *sql.DB) func(http.ResponseWriter, *http.Request) {
-    return func(w http.ResponseWriter, r *http.Request) {
-        // Récupérer les données du formulaire
-        email := r.FormValue("email")
-        password := r.FormValue("password")
-        
-        // Authentifier l'utilisateur
-        token, err := AuthenticateUser(db, email, password)
-        if err != nil {
-            // Gérer l'erreur
-            http.Error(w, err.Error(), http.StatusUnauthorized)
-            return
-        }
-        
-        // Définir le cookie avec le token
-        SetSessionCookie(w, token)
-        
-        // Rediriger vers la page de profil
-        http.Redirect(w, r, "/profile", http.StatusSeeOther)
-    }
-}
 
 func ArticlesHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -275,5 +254,78 @@ func GoogleCallbackHandler(db *sql.DB) http.HandlerFunc {
 
 		
 		http.Redirect(w, r, "/", http.StatusSeeOther)
+	}
+}
+
+
+func LoginHandler(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == "GET" {
+			tmpl, err := template.ParseFiles("frontend/template/home/security/login.html")
+			if err != nil {
+				http.Error(w, "Erreur lors du chargement de la page de connexion", http.StatusInternalServerError)
+				return
+			}
+			tmpl.Execute(w, nil)
+			return
+		}
+
+		if r.Method == "POST" {
+			err := r.ParseForm()
+			if err != nil {
+				http.Error(w, "Erreur lors du traitement du formulaire", http.StatusBadRequest)
+				return
+			}
+
+			email := r.FormValue("email")
+			password := r.FormValue("password")
+
+			if email == "" || password == "" {
+				http.Error(w, "Tous les champs sont requis", http.StatusBadRequest)
+				return
+			}
+
+			// Appel à la fonction Login
+			token, err := Login(db, email, password)
+			if err != nil {
+				http.Error(w, "Erreur lors de la connexion: "+err.Error(), http.StatusUnauthorized)
+				return
+			}
+
+			// Mettre le token dans le cookie
+			SetSessionCookie(w, token)
+
+			// Rediriger vers la page d'accueil ou autre
+			http.Redirect(w, r, "/", http.StatusSeeOther)
+		}
+	}
+}
+
+
+func ProfileHandler(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// Récupérer le token depuis le cookie
+		cookie, err := r.Cookie("session_token")
+		if err != nil {
+			http.Error(w, "Utilisateur non authentifié", http.StatusUnauthorized)
+			return
+		}
+
+		// Récupérer les informations de l'utilisateur
+		user, err := GetUserInfoByToken(db, cookie.Value)
+		if err != nil {
+			http.Error(w, "Erreur lors de la récupération des informations de l'utilisateur", http.StatusInternalServerError)
+			return
+		}
+
+		// Passer les informations de l'utilisateur à la vue
+		tmpl, err := template.ParseFiles("frontend/template/home/profile/profil.html")
+		if err != nil {
+			http.Error(w, "Erreur lors du chargement de la page de profil", http.StatusInternalServerError)
+			return
+		}
+
+		// Rendre la page avec les données utilisateur
+		tmpl.Execute(w, user)
 	}
 }
