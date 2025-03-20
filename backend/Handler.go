@@ -49,48 +49,26 @@ func RegisterHandler(db *sql.DB) http.HandlerFunc {
 	}
 }
 
-func LoginHandler(db *sql.DB) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == "GET" {
-			tmpl, err := template.ParseFiles("frontend/template/home/security/login.html")
-			if err != nil {
-				http.Error(w, "Erreur lors du chargement de la page de connexion", http.StatusInternalServerError)
-				return
-			}
-			tmpl.Execute(w, nil)
-			return
-		}
-
-		if r.Method == "POST" {
-			err := r.ParseForm()
-			if err != nil {
-				http.Error(w, "Erreur lors du traitement du formulaire", http.StatusBadRequest)
-				return
-			}
-
-			email := r.FormValue("email")
-			password := r.FormValue("password")
-
-			err = AuthenticateUser(db, email, password, w)
-			if err != nil {
-				fmt.Println("erreur a l'authentification", err)
-				http.Error(w, err.Error(), http.StatusUnauthorized)
-				return
-			}
-
-			// on genere un token de session et on le stocke dans un cookie
-			token, err := GenerateSessionToken()
-			if err != nil {
-				http.Error(w, "Erreur lors de la generation du token", http.StatusInternalServerError)
-				return
-			}
-
-			SetSessionCookie(w, token)
-			fmt.Println("Utilisateur connecté :", email)
-
-			http.Redirect(w, r, "/", http.StatusSeeOther)
-		}
-	}
+func LoginHandler(db *sql.DB) func(http.ResponseWriter, *http.Request) {
+    return func(w http.ResponseWriter, r *http.Request) {
+        // Récupérer les données du formulaire
+        email := r.FormValue("email")
+        password := r.FormValue("password")
+        
+        // Authentifier l'utilisateur
+        token, err := AuthenticateUser(db, email, password)
+        if err != nil {
+            // Gérer l'erreur
+            http.Error(w, err.Error(), http.StatusUnauthorized)
+            return
+        }
+        
+        // Définir le cookie avec le token
+        SetSessionCookie(w, token)
+        
+        // Rediriger vers la page de profil
+        http.Redirect(w, r, "/profile", http.StatusSeeOther)
+    }
 }
 
 func ArticlesHandler() http.HandlerFunc {

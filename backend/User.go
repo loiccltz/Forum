@@ -16,7 +16,7 @@ type User struct {
 
 //insere un nouvel utilisateur dans la base de donnees
 func InsertUser(db *sql.DB, username, email, password string) error {
-	statement, err := db.Prepare("INSERT INTO user (username, email, password) VALUES (?, ?, ?, ?)")
+	statement, err := db.Prepare("INSERT INTO user (username, email, password) VALUES (?, ?, ?)")
 	if err != nil {
 		return err
 	}
@@ -34,4 +34,15 @@ func (u *User) UpdateSessionToken(db *sql.DB, token string) error {
 	}
 	u.SessionToken = token
 	return nil
+}
+
+// GetUserByEmail récupère un utilisateur par son email
+func GetUserByEmail(db *sql.DB, email string) (*User, error) {
+	user := &User{}
+	err := db.QueryRow("SELECT id, username, email, password, created_at FROM user WHERE email = ?", email).
+		Scan(&user.ID, &user.Username, &user.Email, &user.Password)
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
 }

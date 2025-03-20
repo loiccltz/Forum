@@ -34,21 +34,26 @@ func main() {
 	
 	fmt.Println("Client ID:", os.Getenv("GOOGLE_CLIENT_ID"))
     fmt.Println("Client Secret:", os.Getenv("GOOGLE_CLIENT_SECRET"))
-	backend.InitDB()
 
+	backend.InitDB()
+   
 	fs := http.FileServer(http.Dir("./frontend/public/"))
+	
+	
 	http.Handle("/", backend.LimitRequest(http.HandlerFunc(home)))
-	http.HandleFunc("/articles", backend.ArticlesHandler())
-	http.HandleFunc("/login", backend.LoginHandler(db))
-	http.HandleFunc("/register", backend.RegisterHandler(db))
-	http.HandleFunc("/add", backend.ArticlesaddHandler(db))
-	http.HandleFunc("/create_post", backend.CreatePostHandler(db))
-	http.HandleFunc("/add_comment", backend.AddCommentHandler(db))
-	http.HandleFunc("/like_dislike", backend.LikePostHandler(db))
-	http.HandleFunc("/auth/google", backend.GoogleLoginHandler())
-	http.HandleFunc("/auth/google/callback", backend.GoogleCallbackHandler(db))
-	http.HandleFunc("/profile", backend.AdminHandler(db))
-	http.HandleFunc("/upload", backend.UploadImage)
+    http.Handle("/articles", backend.LimitRequest(http.HandlerFunc(backend.ArticlesHandler())))
+    http.Handle("/login", backend.LimitRequest(http.HandlerFunc(backend.LoginHandler(db))))
+    http.Handle("/register", backend.LimitRequest(http.HandlerFunc(backend.RegisterHandler(db))))
+    http.Handle("/add", backend.LimitRequest(http.HandlerFunc(backend.ArticlesaddHandler(db))))
+    http.Handle("/create_post", backend.LimitRequest(http.HandlerFunc(backend.CreatePostHandler(db))))
+    http.Handle("/add_comment", backend.LimitRequest(http.HandlerFunc(backend.AddCommentHandler(db))))
+    http.Handle("/like_dislike", backend.LimitRequest(http.HandlerFunc(backend.LikePostHandler(db))))
+    http.Handle("/auth/google", backend.LimitRequest(http.HandlerFunc(backend.GoogleLoginHandler())))
+    http.Handle("/auth/google/callback", backend.LimitRequest(http.HandlerFunc(backend.GoogleCallbackHandler(db))))
+    http.Handle("/profile", backend.LimitRequest(http.HandlerFunc(backend.AdminHandler(db))))
+    http.Handle("/upload", backend.LimitRequest(http.HandlerFunc(backend.UploadImage)))
+
+	
 	http.Handle("/uploads/", http.StripPrefix("/uploads/", http.FileServer(http.Dir("uploads"))))
 	http.Handle("/public/", http.StripPrefix("/public/", fs))
 	http.Handle("frontend/public/js", http.StripPrefix("frontend/public/js", fs))

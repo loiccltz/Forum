@@ -35,39 +35,37 @@ func Register(db *sql.DB, username, email, password string) error {
 	return nil
 }
 
-func AuthenticateUser(db *sql.DB, email, password string, w http.ResponseWriter) error {
+func AuthenticateUser(db *sql.DB, email, password string) (string, error) {
     if db == nil {
-        return errors.New("connexion à la base de données invalide")
+        return "", errors.New("connexion à la base de données invalide")
     }
     
-    var storedPassword string
-    err := db.QueryRow("SELECT password FROM user WHERE email = ?", email).Scan(&storedPassword)
+    // Récupère l'utilisateur par email
+    user, err := GetUserByEmail(db, email)
     if err != nil {
-        return errors.New("utilisateur non trouvé")
+        return "", errors.New("utilisateur non trouvé")
     }
     
-    // Vérifier le mot de passe
-    err = bcrypt.CompareHashAndPassword([]byte(storedPassword), []byte(password))
+    // Vérifie le mot de passe
+    err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
     if err != nil {
-        return errors.New("mot de passe incorrect")
+        return "", errors.New("mot de passe incorrect")
     }
     
-    // Génerer un token de session
+    // Génère un token de session
     token, err := GenerateSessionToken()
     if err != nil {
-        return errors.New("erreur lors de la génération du token")
+        return "", err
     }
     
-    // stocker le token dans la BDD
-    err = StoreSessionToken(db, email, token)
+    // Met à jour le token de session dans la base de données
+    err = user.UpdateSessionToken(db, token)
     if err != nil {
-        return errors.New("erreur lors du stockage du token")
+        return "", err
     }
     
-    // Crée le coookie de session
-    SetSessionCookie(w, token)
-    
-    return nil
+    // Retourne le token pour que le handler puisse créer le cookie
+    return token, nil
 }
 
 func GenerateSessionToken() (string, error) {
