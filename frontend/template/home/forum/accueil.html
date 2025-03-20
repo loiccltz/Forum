@@ -1,30 +1,28 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
   <meta charset="utf-8">
   <title>Tech-Talks</title>
-  <link rel="stylesheet" href="/frontend/public/css/accueil.css">
+  <link rel="stylesheet" href="../../../public/css/accueil.css">
 </head>
+
 <body>
   <header>
     <div class="banner">
       <h1>Tech-Talks</h1>
     </div>
-    
-    <button class="home-button" onclick="window.location.href='/home'">
+    <button class="home-button" href="/">
       <img src="/frontend/public/rsc/home/home.png" alt="accueil" />
-    </button>  
-  
-    <button class="forum-button" onclick="window.location.href='/forum'">
-      <img src="/frontend/public/rsc/forum/forum.png" alt="forum" /> 
     </button>
-  
-    <a class="profil-button" href='/profil'>
-      <img src="/frontend/public/rsc/profil/pp profil sans compte-1.png" alt="profil" />
+    <button class="forum-button">
+      <img src="/frontend/public/rsc/forum/forum.png" alt="forum" />
+    </button>
+    <a class="profil-button" href="/profile">
+      <img src="../../../public/rsc/profil/pp profil sans compte.png" alt="profil" />
     </a>
-  
-    <button class="à-propos-button" onclick="window.location.href='/à-propos'">
-      <img src="/frontend/public/rsc/à propos/download-1.png.png" alt="à propos" />
+    <button class="à-propos-button">
+      <img src="/frontend/public/rsc/à propos/download-1.png.png" alt="à propos" href="/à-propos" />
     </button>
   </header>
 
@@ -33,14 +31,8 @@
       <h2>Filtrer les catégories</h2>
       <form method="GET" action="/">
         <label for="filter-name">Nom</label>
-        
-        <input 
-          type="text" 
-          id="filter-name" 
-          name="query" 
-          class="sidebar-input" 
-          placeholder="Rechercher une catégorie" />
-          <button type="submit" class="sidebar-button">Rechercher</button>
+        <input type="text" id="filter-name" name="query" class="sidebar-input" placeholder="Rechercher une catégorie" />
+        <button type="submit" class="sidebar-button">Rechercher</button>
         <label for="filter-componant">Composants</label>
         <select id="filter-componant" name="year" class="sidebar-input">
           <option value="">Tout les composants</option>
@@ -66,20 +58,26 @@
           <option value="Nvidia">Nvidia</option>
           <option value="Samsung">Samsung</option>
           <option value="Corsair">Corsair</option>
-          </select>
-
-      </form>      
+        </select>
+      </form>
     </aside>
-</body>
-<div class="content">
-  <h2 class="titre-categories">Dernier post</h2>
-  <div class="grille">
+  </div>
+
+  <div class="content">
+    <h2>Derniers Posts</h2>
+    <div class="grille">
+      {{ range .Posts }}
       <div class="grid-item">
         <a href="/post?id={{ .Id }}"></a>
-          <img src="{{ .Image }}" alt="{{ .Title }}" />
+        <img src="{{ .Image }}" alt="{{ .Title }}" />
         </a>
-        <h2>{{ .Title }}</h2> 
+        <h2>{{ .Title }}</h2>
         <p>{{ .Content }}</p>
-</div>
+      </div>
+      {{ end }}
+    </div>
+  </div>
+
 </body>
+
 </html>
