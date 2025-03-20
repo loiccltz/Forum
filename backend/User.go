@@ -25,3 +25,13 @@ func InsertUser(db *sql.DB, username, email, password string) error {
 	_, err = statement.Exec(username, email, password)
 	return err
 }
+
+//met a jour le token de session d'un utilisateur
+func (u *User) UpdateSessionToken(db *sql.DB, token string) error {
+	_, err := db.Exec("UPDATE user SET session_token = ? WHERE id = ?", token, u.ID)
+	if err != nil {
+		return err
+	}
+	u.SessionToken = token
+	return nil
+}

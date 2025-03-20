@@ -71,7 +71,7 @@ func LoginHandler(db *sql.DB) http.HandlerFunc {
 			email := r.FormValue("email")
 			password := r.FormValue("password")
 
-			err = AuthenticateUser(db, email, password)
+			err = AuthenticateUser(db, email, password, w)
 			if err != nil {
 				fmt.Println("erreur a l'authentification", err)
 				http.Error(w, err.Error(), http.StatusUnauthorized)

@@ -35,24 +35,39 @@ func Register(db *sql.DB, username, email, password string) error {
 	return nil
 }
 
-func AuthenticateUser(db *sql.DB, email, password string) error {
-	if db == nil {
-		return errors.New("connexion à la base de données invalide")
-	}
-
-	var storedPassword string
-	err := db.QueryRow("SELECT password FROM user WHERE email = ?", email).Scan(&storedPassword)
-	if err != nil {
-		return errors.New("utilisateur non trouvé")
-	}
-
-	// Vérifier le mot de passe
-	err = bcrypt.CompareHashAndPassword([]byte(storedPassword), []byte(password))
-	if err != nil {
-		return errors.New("mot de passe incorrect")
-	}
-
-	return nil
+func AuthenticateUser(db *sql.DB, email, password string, w http.ResponseWriter) error {
+    if db == nil {
+        return errors.New("connexion à la base de données invalide")
+    }
+    
+    var storedPassword string
+    err := db.QueryRow("SELECT password FROM user WHERE email = ?", email).Scan(&storedPassword)
+    if err != nil {
+        return errors.New("utilisateur non trouvé")
+    }
+    
+    // Vérifier le mot de passe
+    err = bcrypt.CompareHashAndPassword([]byte(storedPassword), []byte(password))
+    if err != nil {
+        return errors.New("mot de passe incorrect")
+    }
+    
+    // Génerer un token de session
+    token, err := GenerateSessionToken()
+    if err != nil {
+        return errors.New("erreur lors de la génération du token")
+    }
+    
+    // stocker le token dans la BDD
+    err = StoreSessionToken(db, email, token)
+    if err != nil {
+        return errors.New("erreur lors du stockage du token")
+    }
+    
+    // Crée le coookie de session
+    SetSessionCookie(w, token)
+    
+    return nil
 }
 
 func GenerateSessionToken() (string, error) {
@@ -64,6 +79,10 @@ func GenerateSessionToken() (string, error) {
 	return hex.EncodeToString(bytes), nil
 }
 
+func StoreSessionToken(db *sql.DB, email, token string) error {
+    _, err := db.Exec("UPDATE user SET session_token = ? WHERE email = ?", token, email)
+    return err
+}
 
 
 func SetSessionCookie(w http.ResponseWriter, token string) {
