@@ -109,6 +109,12 @@ input[type="date"] {
   display: none;
 }
 
+#profile-btn {
+  position: absolute;
+  bottom: 43px;
+  right: 27px;
+}
+
 #theme-selector {
   margin-bottom: 20px;
   text-align: center;

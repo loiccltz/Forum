@@ -1,4 +1,3 @@
-
 document.addEventListener('DOMContentLoaded', function() {
     // Données de l'utilisateur (simulées)
     let userData = {
@@ -48,6 +47,19 @@ document.addEventListener('DOMContentLoaded', function() {
   
     // Gestionnaire d'événement pour le bouton "Modifier"
     editBtn.addEventListener('click', toggleEditMode);
+
+    // Ajout du bouton en bas à droite de la carte de profil
+    const profileBtn = document.createElement("button");
+    profileBtn.id = "profile-btn";
+    profileBtn.className = "btn";
+    profileBtn.textContent = "Sortir";
+        
+    // Ajout du bouton à la carte de profil
+    const container = document.querySelector(".container");
+      if (container) {
+          container.style.position = "relative"; // Assurer un positionnement relatif
+          container.appendChild(profileBtn);
+      }
   
     // Gestionnaire d'événement pour le formulaire
     form.addEventListener('submit', function(e) {
