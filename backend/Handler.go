@@ -73,7 +73,7 @@ func CreatePostHandler(db *sql.DB) http.HandlerFunc {
 			http.Error(w, "Vous devez être connecté pour créer un post", http.StatusUnauthorized)
 			return
 		}
-		
+
 		if r.Method == "GET" {
 			fmt.Println("GET")
 			tmpl, err := template.ParseFiles("frontend/template/home/article/add.html")
@@ -231,19 +231,6 @@ func LikePostHandler(db *sql.DB) http.HandlerFunc {
 	}
 }
 
-func ArticlesaddHandler(db *sql.DB) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == "GET" {
-			tmpl, err := template.ParseFiles("frontend/template/home/article/add.html")
-			if err != nil {
-				http.Error(w, "Erreur lors du chargement de la page de connexion", http.StatusInternalServerError)
-				return
-			}
-			tmpl.Execute(w, nil)
-			return
-		}
-	}
-}
 
 func AdminHandler(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
