@@ -1,52 +1,83 @@
-<!DOCTYPE html>
-<html lang="fr">
+<html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profil Utilisateur</title>
-    <link rel="stylesheet" href="../../../public/css/profile.css">
-    <style>
-        .bouton-image {
-            position: fixed;
-            top: 10px;
-            left: 10px;
-            width: 40px;
-            height: 40px;
-            background: url('Forum/frontend/public/rsc/home/home.png') no-repeat center center;
-            background-size: cover;
-            border: none;
-            cursor: pointer;
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
+    <script src="script.js"></script>
 </head>
 <body>
-    <button class="bouton-image" onclick="alert('Bouton cliqué !')"></button>
-</body>
-
-    <header>
-        <h1>Profil de l'utilisateur</h1>
-    </header>
-
-    <main>
-        <section class="profil">
-            <div class="avatar">
-                <img id="avatar" src="" alt="Avatar de l'utilisateur">
+    <div class="container">
+        <h1>Profil Utilisateur</h1>
+        <div id="theme-selector">
+            <label for="theme-select">Choisir un thème : </label>
+            <select id="theme-select">
+                <option value="default">Défaut</option>
+                <option value="light">Clair</option>
+            </select>
+        </div>
+        <div class="profile-picture" id="profile-picture"></div>
+        <form id="profile-form" method="GET" action="update-profile">
+            <div class="info-section">
+                <h2>Informations Personnelles</h2>
+                <div class="info-item">
+                    <span class="info-label">Nom :</span>
+                    <span class="info-value" id="name"></span>
+                    <input type="text" id="name-input" class="hidden">
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Prénom :</span>
+                    <span class="info-value" id="firstname"></span>
+                    <input type="text" id="firstname-input" class="hidden">
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Date de naissance :</span>
+                    <span class="info-value" id="birthdate"></span>
+                    <input type="date" id="birthdate-input" class="hidden">
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Lieu de naissance :</span>
+                    <span class="info-value" id="birthplace"></span>
+                    <input type="text" id="birthplace-input" class="hidden">
+                </div>
             </div>
-            <div class="infos">
-                <h2 id="username">Nom d'utilisateur</h2>
-                <p>Membre depuis : <span id="member-since">...</span></p>
-                <p>Rang : <span id="rank">...</span></p>
-                <p>Messages : <span id="messages">...</span></p>
-                <p>Localisation : <span id="location">...</span></p>
-            </div>
-        </section>
 
-        <section class="derniers-messages">
-            <h2>Derniers messages</h2>
-            <ul id="messages-list">
-                <!-- Les messages seront injectés ici par JavaScript -->
-            </ul>
-        </section>
-    </main>
+            <div class="info-section">
+                <h2>Coordonnées</h2>
+                <div class="info-item">
+                    <span class="info-label">Email :</span>
+                    <span class="info-value" id="email"></span>
+                    <input type="email" id="email-input" class="hidden">
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Téléphone :</span>
+                    <span class="info-value" id="phone"></span>
+                    <input type="tel" id="phone-input" class="hidden">
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Adresse :</span>
+                    <span class="info-value" id="address"></span>
+                    <input type="text" id="address-input" class="hidden">
+                </div>
+            </div>
+
+            <div class="info-section">
+                <h2>Informations Professionnelles</h2>
+                <div class="info-item">
+                    <span class="info-label">Profession :</span>
+                    <span class="info-value" id="profession"></span>
+                    <input type="text" id="profession-input" class="hidden">
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Entreprise :</span>
+                    <span class="info-value" id="company"></span>
+                    <input type="text" id="company-input" class="hidden">
+                </div>
+            </div>
+            <button type="button" id="edit-btn" class="btn">Modifier</button>
+            <button type="submit" id="save-btn" class="btn hidden">Enregistrer</button>
+            <button id="profile-btn" class="btn">Sortir</button>
+        </form>
+    </div>
 </body>
 </html>

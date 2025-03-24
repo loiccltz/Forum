@@ -1,37 +1,81 @@
 document.addEventListener("DOMContentLoaded", function () {
-    console.log("Script chargé et DOM prêt !");
-    // Simuler les données utilisateur récupérées depuis une base de données ou une API
-    const userData = {
-        username: "Axel",
-        memberSince: "01/01/2020",
-        rank: "Modérateur",
-        messages: 256,
-        location: "France",
-        avatar: "avatar.jpg",
-        lastMessages: [
-            { title: "Titre du sujet 1", date: "20/02/2025", link: "#" },
-            { title: "Titre du sujet 2", date: "18/02/2025", link: "#" },
-            { title: "Titre du sujet 3", date: "15/02/2025", link: "#" }
-        ]
-    };
+    // Gestion de l'image de profil
+    const profileImg = document.getElementById("profile-img");
+    const profileImgInput = document.getElementById("profile-img-input");
+    const resetPhotoBtn = document.getElementById("reset-photo");
 
-    // Mettre à jour les éléments HTML avec les données utilisateur
-    document.getElementById("username").textContent = userData.username;
-    document.getElementById("member-since").textContent = userData.memberSince;
-    document.getElementById("rank").textContent = userData.rank;
-    document.getElementById("messages").textContent = userData.messages;
-    document.getElementById("location").textContent = userData.location;
-    document.getElementById("avatar").src = userData.avatar;
+    profileImgInput.addEventListener("change", function (event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                profileImg.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+    });
 
-    // Afficher les derniers messages
-    const messagesList = document.getElementById("messages-list");
-    userData.lastMessages.forEach(message => {
-        const li = document.createElement("li");
-        const a = document.createElement("a");
-        a.href = message.link;
-        a.textContent = message.title;
-        li.appendChild(a);
-        li.innerHTML += ` - Posté le ${message.date}`;
-        messagesList.appendChild(li);
+    resetPhotoBtn.addEventListener("click", function () {
+        profileImg.src = "https://bootdey.com/img/Content/avatar/avatar1.png";
+        profileImgInput.value = "";
+    });
+
+    // Gestion des informations du profil
+    const usernameInput = document.getElementById("username");
+    const nameInput = document.getElementById("name");
+    const bioInput = document.getElementById("bio");
+    const birthdayInput = document.getElementById("birthday");
+    const countryInput = document.getElementById("country");
+    const phoneInput = document.getElementById("phone");
+    const websiteInput = document.getElementById("website");
+    const saveChangesBtn = document.getElementById("save-changes");
+
+    saveChangesBtn.addEventListener("click", function () {
+        const userInfo = {
+            username: usernameInput.value.trim(),
+            name: nameInput.value.trim(),
+            bio: bioInput.value.trim(),
+            birthday: birthdayInput.value.trim(),
+            country: countryInput.value,
+            phone: phoneInput.value.trim(),
+            website: websiteInput.value.trim()
+        };
+
+        if (!userInfo.username || !userInfo.name) {
+            alert("Veuillez remplir tous les champs obligatoires !");
+            return;
+        }
+
+        alert("Modifications enregistrées !");
+    });
+
+    // Gestion du changement de mot de passe
+    const newPasswordInput = document.getElementById("new-password");
+    const repeatPasswordInput = document.getElementById("repeat-password");
+    const updatePasswordBtn = document.getElementById("update-password");
+
+    updatePasswordBtn.addEventListener("click", function () {
+        if (newPasswordInput.value !== repeatPasswordInput.value) {
+            alert("Les mots de passe ne correspondent pas !");
+            return;
+        }
+
+        alert("Mot de passe mis à jour avec succès !");
+    });
+
+    // Gestion des liens sociaux
+    const socialInputs = document.querySelectorAll(".social-link");
+    socialInputs.forEach(input => {
+        input.addEventListener("change", function () {
+            alert("Lien social mis à jour : " + this.value);
+        });
+    });
+
+    // Gestion des préférences de notifications
+    const notificationCheckboxes = document.querySelectorAll(".notification-setting");
+    notificationCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener("change", function () {
+            alert("Préférence de notification mise à jour : " + (this.checked ? "Activée" : "Désactivée"));
+        });
     });
 });
