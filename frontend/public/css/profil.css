@@ -1,0 +1,336 @@
+:root {
+  --primary-color: #ffffff;
+  --secondary-color: #2ecc71;
+  --background-color: #1b2838;
+  --text-color: #ffff;
+  --border-color: #bdc3c7;
+  --container-bg: #2a475e;
+  --button-color: #2a475e;
+  --button-color-hover: #004E7C;
+}
+
+body {
+  font-family: 'Roboto', Arial, sans-serif;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  line-height: 1.6;
+  margin: 0;
+  margin-top: 70px;
+  padding: 20px;
+  transition: all 0.3s ease;
+}
+
+header .banner {     
+  position: fixed;            
+  top: 0;
+  left: 0;
+  width: 100%;               
+  text-align: center;
+  background-color: #171a21;
+  color: white;
+  padding: 15px 0;
+  z-index: 100;             
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);  }
+
+header .banner h6 {     
+  margin: 0;
+  font-size: 2rem;
+}
+
+.home-button {     
+  position: fixed;          
+  top: 15px;
+  left: 5px;
+  background-color: #2a475e;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+  z-index: 101;
+  display: flex;            
+  align-items: center;
+  gap: 10px;               
+}
+
+.home-button:hover {     
+  background-color: #004E7C;
+}
+
+.home-button img {     
+  max-width: 300px;          
+  max-height: 30px;
+}
+
+.home-button h2 {     
+  margin: 0;
+  text-align: left;
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  background-color: var(--container-bg);
+}
+
+
+
+.forum-button {     
+  position: fixed;          
+  top: 15px;
+  left: 53px;
+  background-color: #2a475e;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+  z-index: 101;
+  display: flex;            
+  align-items: center;
+  gap: 10px;                
+}
+
+.forum-button:hover {     
+  background-color: #004E7C;
+}
+
+.forum-button img {    
+  max-width: 300px;          
+  max-height: 30px;
+}
+
+.forum-button h2 {      
+  margin: 0;
+  text-align: left;
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+
+
+.profil-button {      
+  position: fixed;          
+  top: 15px;
+  right: 5px;
+  background-color: #2a475e;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+  z-index: 101;
+  display: flex;            
+  align-items: center;
+  gap: 10px;                
+}
+
+      .profil-bouton-image {
+          position: fixed;
+          top: 10px;
+          left: 10px;
+          width: 40px;
+          height: 40px;
+          background: url('Forum/frontend/public/rsc/home/home.png') no-repeat center center;
+          background-size: cover;
+          border: none;
+          cursor: pointer;
+      }
+
+.profil-button:hover {      
+  background-color: #004E7C;
+}
+
+.profil-button img {      
+  max-width: 300px;          
+  max-height: 30px;
+}
+
+.profil-button h2 {     
+  margin: 0;
+  text-align: left;
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+
+}
+
+
+
+.à-propos-button {      
+  position: fixed;          
+  top: 15px;
+  right: 50px;
+  background-color: #2a475e;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+  z-index: 101;
+  display: flex;            
+  align-items: center;
+  gap: 10px;                
+}
+
+.à-propos-button:hover {       
+  background-color: #004E7C;
+}
+
+.à-propos-button img {     
+  max-width: 300px;          
+  max-height: 30px;
+}
+
+.à-propos-button h2 {     
+  margin: 0;
+  text-align: left;
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.container {
+  max-width: 600px;
+  margin: 0 auto;
+  background-color: var(--container-bg);
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
+}
+
+h1 {
+  color: var(--primary-color);
+  text-align: center;
+  margin-bottom: 1px;
+  margin-top: 1px;
+}
+
+.profile-picture {
+  margin-top: 1px;
+  width: 330px;
+  height: 330px;
+  border-radius: 50%;
+  margin: 0 auto 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 60px;
+  color: white;
+  background-color: var(--container-bg);
+ 
+  transition: background-color 0.3s ease;
+}
+
+.info-section h2 {
+  margin-bottom: 20px;
+}
+
+.info-section h2 {
+  color: var(--primary-color);
+  border-bottom: 2px solid var(--border-color);
+  padding-bottom: px;
+  margin-bottom: 0px;
+  background-color: var(--container-bg);
+}
+
+.info-section h3 {
+  margin-bottom: 20px;
+}
+
+.info-section h3 {
+  color: var(--primary-color);
+  border-bottom: 2px solid var(--border-color);
+  padding-bottom: px;
+  margin-bottom: 0px;
+  background-color: var(--container-bg);
+}
+
+.info-item {
+  
+  display: flex;
+  align-items: center;
+  background-color: var(--container-bg);
+}
+
+.info-label {
+  font-weight: bold;
+  margin-right: 10px;
+  width: 120px;
+  background-color: var(--container-bg)
+}
+
+.info-value {
+  color: var(--text-color);
+  flex-grow: 1;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="date"] {
+  width: 100%;
+  padding: 5px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 14px;
+  background-color: var(--container-bg);
+  color: var(--text-color);
+  transition: all 0.3s ease;
+}
+
+.btn {
+  background-color: var(--button-color);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  margin-top: 20px;
+  transition: background-color 0.3s ease;
+}
+
+.btn:hover {
+  background-color: var(--button-color-hover);
+}
+
+.hidden {
+  display: none;
+}
+
+#theme-selector {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+#theme-selector select {
+  padding: 5px;
+  font-size: 16px;
+  border-radius: 4px;
+  background-color: var(--container-bg);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 20px;
+  }
+  
+  .info-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .info-label {
+    margin-bottom: 5px;
+  }
+}
