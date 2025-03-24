@@ -5,14 +5,19 @@ body {
     background-color: #1b2838;
   }
   
-  header .banner {
+  header .banner {     
+    position: fixed;            
+    top: 0;
+    left: 0;
+    width: 100%;               
     text-align: center;
     background-color: #171a21;
     color: white;
-    padding: 20px 0;
-  }
+    padding: 15px 0;
+    z-index: 100;             
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);  }
   
-  header .banner h1 {
+  header .banner h1 {     
     margin: 0;
     font-size: 2rem;
   }
@@ -63,10 +68,6 @@ body {
     transition: background-color 0.3s ease;
   }
   
-  .sidebar-button:hover {
-    background-color: #004E7C;
-  }
-  
   .content {
     flex: 1;
     padding: 20px;
@@ -84,7 +85,7 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    background-color: #2a475e;
+    background-color: #f4f9fd;
     color: white;
     width: 200px;
     padding: 20px;
@@ -107,3 +108,204 @@ body {
     letter-spacing: 1px;
   }
   
+  h4 {
+    margin-top: 80px;
+    border: none;
+    background: #2a475e;
+    color: #fff;
+    padding: 10px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    font-size: 24px;
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.card-body {
+  padding: 20px;
+  color: #fff;
+}
+
+.card-body {
+  background-color: #2a475e;
+  width: 100%;
+  padding: 5px;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  color: white;;
+}
+
+h6 {
+  background-color: #2a475e;
+  width: 100%;
+  padding: 5px;
+  margin-bottom: 10px;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  color: white;
+}
+
+ul {
+  background-color: #2a475e;
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  color: white;
+}
+
+ul li {
+  background: #233b4e;
+  padding: 10px;
+  margin: 5px 0;
+  border-radius: 5px;
+  
+}
+
+.home-button {     
+  position: fixed;          
+  top: 15px;
+  left: 10px;
+  background-color: #2a475e;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+  z-index: 101;
+  display: flex;            
+  align-items: center;
+  gap: 10px;               
+}
+
+.home-button:hover {      
+  background-color: #004E7C;
+}
+
+.home-button img {     
+  max-width: 30px;          
+  max-height: 30px;
+}
+
+.home-button h2 {     
+  margin: 0;
+  text-align: left;
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.forum-button {     
+  position: fixed;          
+  top: 15px;
+  left: 55px;
+  background-color: #2a475e;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+  z-index: 101;
+  display: flex;            
+  align-items: center;
+  gap: 10px;                
+}
+
+.forum-button:hover {    
+  background-color: #004E7C;
+}
+
+.forum-button img {     
+  max-width: 300px;          
+  max-height: 30px;
+}
+
+.forum-button h2 {      
+  margin: 0;
+  text-align: left;
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+
+
+.profil-button {      
+  position: fixed;          
+  top: 15px;
+  right: 10px;
+  background-color: #2a475e;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+  z-index: 101;
+  display: flex;            
+  align-items: center;
+  gap: 10px;                
+}
+
+.profil-button:hover {      
+  background-color: #004E7C;
+}
+
+.profil-button img {      
+  max-width: 300px;          
+  max-height: 30px;
+}
+
+.profil-button h2 {     
+  margin: 0;
+  text-align: left;
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+
+
+.à-propos-button {      
+  position: fixed;          
+  top: 15px;
+  right: 55px;
+  background-color: #2a475e;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+  z-index: 101;
+  display: flex;            
+  align-items: center;
+  gap: 10px;                
+}
+
+.à-propos-button:hover {       
+  background-color: #004E7C;
+}
+
+.à-propos-button img {      
+  max-width: 300px;          
+  max-height: 30px;
+}
+
+.à-propos-button h2 {     
+  margin: 0;
+  text-align: left;
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
