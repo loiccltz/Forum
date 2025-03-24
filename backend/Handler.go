@@ -7,6 +7,8 @@ import (
 	"html/template"
 	"io"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
 )
 
@@ -49,7 +51,6 @@ func RegisterHandler(db *sql.DB) http.HandlerFunc {
 	}
 }
 
-
 func ArticlesHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == "GET" {
@@ -66,13 +67,27 @@ func ArticlesHandler() http.HandlerFunc {
 
 func CreatePostHandler(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+
+		fmt.Println("Fonction CreatePost appelée")
 		if !IsAuthenticated(r) {
 			http.Error(w, "Vous devez être connecté pour créer un post", http.StatusUnauthorized)
 			return
 		}
+		
+		if r.Method == "GET" {
+			fmt.Println("GET")
+			tmpl, err := template.ParseFiles("frontend/template/home/article/add.html")
+			if err != nil {
+				http.Error(w, "Erreur lors du chargement du formulaire", http.StatusInternalServerError)
+				fmt.Println("Erreur template :", err)
+				return
+			}
+			tmpl.Execute(w, nil)
+		}
 
-		if r.Method == "POST" {
-			err := r.ParseForm()
+		if r.Method == http.MethodPost {
+			fmt.Println(" POST")
+			err := r.ParseMultipartForm(20 << 20) // Limite a 20MB
 			if err != nil {
 				http.Error(w, "Erreur lors du traitement du formulaire", http.StatusBadRequest)
 				return
@@ -81,22 +96,48 @@ func CreatePostHandler(db *sql.DB) http.HandlerFunc {
 			title := r.FormValue("title")
 			content := r.FormValue("content")
 			sessionToken, _ := GetSessionToken(r)
-			imageURL := r.FormValue("image_url")
 
+			file, handler, err := r.FormFile("image")
+			if err != nil {
+				http.Error(w, "Erreur lors de l'upload de l'image", http.StatusBadRequest)
+				return
+			}
+			defer file.Close()
+
+			// il faut changer le chemin
+			uploadDir := "uploads/"
+			if _, err := os.Stat(uploadDir); os.IsNotExist(err) {
+				os.Mkdir(uploadDir, os.ModePerm)
+			}
+
+			imagePath := filepath.Join(uploadDir, handler.Filename)
+
+			// save l'image
+			dst, err := os.Create(imagePath)
+			if err != nil {
+				http.Error(w, "Erreur lors de la sauvegarde de l'image", http.StatusInternalServerError)
+				return
+			}
+			defer dst.Close()
+			io.Copy(dst, file)
+
+			// recup id de l'utilisateur
 			var userID int
-			err = db.QueryRow("SELECT id FROM user WHERE id = (SELECT user_id FROM sessions WHERE token = ?)", sessionToken).Scan(&userID)
+			err = db.QueryRow("SELECT id FROM user WHERE session_token = ?", sessionToken).Scan(&userID)
 			if err != nil {
 				http.Error(w, "Utilisateur non trouvé", http.StatusUnauthorized)
 				return
 			}
 
-			err = CreatePost(db, title, content, imageURL, userID)
+			err = CreatePost(db, title, content, imagePath, userID)
 			if err != nil {
 				http.Error(w, "Erreur lors de la création du post", http.StatusInternalServerError)
 				return
 			}
 
+		
 			http.Redirect(w, r, "/", http.StatusSeeOther)
+			return
 		}
 	}
 }
@@ -219,18 +260,18 @@ func AdminHandler(db *sql.DB) http.HandlerFunc {
 }
 
 func GoogleLoginHandler() http.HandlerFunc {
-	return func (w http.ResponseWriter, r *http.Request)  {
+	return func(w http.ResponseWriter, r *http.Request) {
 		url := googleOAuthConfig.AuthCodeURL("randomstate")
 		fmt.Println(url)
 		// randomstate c'est pour prevenir des attaque de type CSRF
 		http.Redirect(w, r, url, http.StatusTemporaryRedirect)
-	} 
+	}
 }
 
 func GoogleCallbackHandler(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		// recup le code d'autorisation 
+		// recup le code d'autorisation
 		code := r.URL.Query().Get("code")
 
 		token, err := googleOAuthConfig.Exchange(context.Background(), code)
@@ -252,11 +293,9 @@ func GoogleCallbackHandler(db *sql.DB) http.HandlerFunc {
 		userData, _ := io.ReadAll(resp.Body)
 		fmt.Println("Données utilisateur :", string(userData))
 
-		
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 	}
 }
-
 
 func LoginHandler(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -300,7 +339,6 @@ func LoginHandler(db *sql.DB) http.HandlerFunc {
 		}
 	}
 }
-
 
 func ProfileHandler(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
