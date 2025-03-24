@@ -3,6 +3,7 @@ package backend
 import (
 	"database/sql"
 	"fmt"
+	"log"
 )
 
 type Post struct {
@@ -13,14 +14,22 @@ type Post struct {
 	AuthorID int
 }
 
-func CreatePost(db *sql.DB, title, content, imageURL string, authorID int) error {
-	_, err := db.Exec("INSERT INTO post (title, content, image_url, author_id) VALUES (?, ?, ?, ?)", title, content, imageURL, authorID)
-	if err != nil {
-		fmt.Println("Erreur lors de la création du post :", err)
-		return err
-	}
-	fmt.Println("✅ Post créé avec succès :", title)
-	return nil
+func CreatePost(db *sql.DB, title, content, imageURL string, authorID int, categories []int) error {
+    result, err := db.Exec("INSERT INTO post (title, content, image_url, author_id) VALUES (?, ?, ?, ?)", 
+        title, content, imageURL, authorID)
+    if err != nil {
+        return err
+    }
+    
+    postID, _ := result.LastInsertId()
+    
+    for _, catID := range categories {
+        _, err := db.Exec("INSERT INTO post_category VALUES (?, ?)", postID, catID)
+        if err != nil {
+            log.Printf("Erreur d'insertion catégorie : %v", err)
+        }
+    }
+    return nil
 }
 
 func AddComment(db *sql.DB, content string, authorID, postID int) error {

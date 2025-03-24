@@ -65,41 +65,53 @@ func ArticlesHandler() http.HandlerFunc {
 }
 
 func CreatePostHandler(db *sql.DB) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		if !IsAuthenticated(r) {
-			http.Error(w, "Vous devez être connecté pour créer un post", http.StatusUnauthorized)
-			return
-		}
+    return func(w http.ResponseWriter, r *http.Request) {
+        if !IsAuthenticated(r) {
+            http.Error(w, "Vous devez être connecté pour créer un post", http.StatusUnauthorized)
+            return
+        }
 
-		if r.Method == "POST" {
-			err := r.ParseForm()
-			if err != nil {
-				http.Error(w, "Erreur lors du traitement du formulaire", http.StatusBadRequest)
-				return
-			}
+        if r.Method == "POST" {
+            err := r.ParseForm()
+            if err != nil {
+                http.Error(w, "Erreur lors du traitement du formulaire", http.StatusBadRequest)
+                return
+            }
 
-			title := r.FormValue("title")
-			content := r.FormValue("content")
-			sessionToken, _ := GetSessionToken(r)
-			imageURL := r.FormValue("image_url")
+            title := r.FormValue("title")
+            content := r.FormValue("content")
+            sessionToken, _ := GetSessionToken(r)
+            imageURL := r.FormValue("image_url")
 
-			var userID int
-			err = db.QueryRow("SELECT id FROM user WHERE id = (SELECT user_id FROM sessions WHERE token = ?)", sessionToken).Scan(&userID)
-			if err != nil {
-				http.Error(w, "Utilisateur non trouvé", http.StatusUnauthorized)
-				return
-			}
+            var userID int
+            err = db.QueryRow("SELECT id FROM user WHERE id = (SELECT user_id FROM sessions WHERE token = ?)", sessionToken).Scan(&userID)
+            if err != nil {
+                http.Error(w, "Utilisateur non trouvé", http.StatusUnauthorized)
+                return
+            }
 
-			err = CreatePost(db, title, content, imageURL, userID)
-			if err != nil {
-				http.Error(w, "Erreur lors de la création du post", http.StatusInternalServerError)
-				return
-			}
+            categoryIDs := r.Form["categories"]
+            var categories []int
+            for _, idStr := range categoryIDs {
+                id, err := strconv.Atoi(idStr)
+                if err != nil {
+                    http.Error(w, "ID de catégorie invalide", http.StatusBadRequest)
+                    return
+                }
+                categories = append(categories, id)
+            }
 
-			http.Redirect(w, r, "/", http.StatusSeeOther)
-		}
-	}
+            err = CreatePost(db, title, content, imageURL, userID, categories)
+            if err != nil {
+                http.Error(w, "Erreur lors de la création du post", http.StatusInternalServerError)
+                return
+            }
+
+            http.Redirect(w, r, "/", http.StatusSeeOther)
+        }
+    }
 }
+
 
 func AddCommentHandler(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -329,3 +341,30 @@ func ProfileHandler(db *sql.DB) http.HandlerFunc {
 		tmpl.Execute(w, user)
 	}
 }
+
+func GetCurrentUser(db *sql.DB, r *http.Request) *User {
+    cookie, err := r.Cookie("session_token")
+    if err != nil {
+        return nil
+    }
+
+    user, err := GetUserInfoByToken(db, cookie.Value) 
+    if err != nil {
+        return nil
+    }
+
+    return user
+}
+
+func ActivityHandler(db *sql.DB) http.HandlerFunc {
+    return func(w http.ResponseWriter, r *http.Request) {
+        user := GetCurrentUser(db, r)
+        if user == nil {
+            http.Error(w, "Utilisateur non authentifié", http.StatusUnauthorized)
+            return
+        }
+
+        fmt.Fprintf(w, "Activités de l'utilisateur : %s", user.Username)
+    }
+}
+

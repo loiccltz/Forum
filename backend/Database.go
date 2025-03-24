@@ -50,7 +50,72 @@ func InitDB() (*sql.DB, error) {
 	`)
 	if err != nil {
 		db.Close()
-		return nil, fmt.Errorf("❌ Erreur lors de la création de la table product : %v", err)
+		return nil, fmt.Errorf("❌ Erreur lors de la création de la table post : %v", err)
+	}
+
+	_, err = db.Exec(`
+	    CREATE TABLE IF NOT EXISTS category (
+        	id INT AUTO_INCREMENT PRIMARY KEY,
+        	name VARCHAR(255) NOT NULL UNIQUE
+    	);
+	`)
+		if err != nil {
+		db.Close()
+		return nil, fmt.Errorf("❌ Erreur lors de la création de la table category : %v", err)
+	}
+
+	_, err = db.Exec(`
+    	CREATE TABLE IF NOT EXISTS post_category (
+        	post_id INT,
+        	category_id INT,
+        	PRIMARY KEY (post_id, category_id),
+        	FOREIGN KEY (post_id) REFERENCES post(id),
+        	FOREIGN KEY (category_id) REFERENCES category(id)
+    	);
+	`)
+	if err != nil {
+		db.Close()
+		return nil, fmt.Errorf("❌ Erreur lors de la création de la table post_category : %v", err)
+	}
+
+	_, err = db.Exec(`
+		CREATE TABLE IF NOT EXISTS notification (
+        	id INT AUTO_INCREMENT PRIMARY KEY,
+        	user_id INT NOT NULL,
+        	type VARCHAR(50) NOT NULL,
+        	source_id INT NOT NULL,
+        	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    	);
+	`)
+		if err != nil {
+		db.Close()
+		return nil, fmt.Errorf("❌ Erreur lors de la création de la table notification : %v", err)
+	}
+    
+	_, err = db.Exec(`
+    	CREATE TABLE IF NOT EXISTS comment (
+        	id INT AUTO_INCREMENT PRIMARY KEY,
+        	content TEXT NOT NULL,
+        	author_id INT NOT NULL,
+        	post_id INT NOT NULL,
+        	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    	);
+	`)
+		if err != nil {
+		db.Close()
+		return nil, fmt.Errorf("❌ Erreur lors de la création de la table comment : %v", err)
+	}
+	_, err = db.Exec(`
+    	CREATE TABLE IF NOT EXISTS like_dislike (
+        	user_id INT,
+        	post_id INT,
+        	type INT CHECK(type IN (0, 1)),
+        	PRIMARY KEY (user_id, post_id)
+    	);
+	`)
+	if err != nil {
+		db.Close()
+		return nil, fmt.Errorf("❌ Erreur lors de la création de la table like_dislike : %v", err)
 	}
 
 	fmt.Println("✅ Connexion à MySQL réussie et tables créées !")
