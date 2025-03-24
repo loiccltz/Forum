@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="utf-8">
+  <title>Tech-Talks</title>
+  <link rel="stylesheet" href="../../../public/css/accueil.css">
+</head>
+
+<body>
+  <header>
+    <div class="banner">
+      <h1>Tech-Talks</h1>
+    </div>
+    <button class="home-button" href="/">
+      <img src="/frontend/public/rsc/home/home.png" alt="accueil" />
+    </button>
+    <button class="forum-button">
+      <img src="/frontend/public/rsc/forum/forum.png" alt="forum" />
+    </button>
+    <a class="profil-button" href="/profile">
+      <img src="../../../public/rsc/profil/pp profil sans compte.png" alt="profil" />
+    </a>
+    <button class="à-propos-button">
+      <img src="/frontend/public/rsc/à propos/download-1.png.png" alt="à propos" href="/à-propos" />
+    </button>
+  </header>
+
+  <div class="main-container">
+    <aside class="sidebar">
+      <h2>Filtrer les catégories</h2>
+      <form method="GET" action="/">
+        <label for="filter-name">Nom</label>
+        <input type="text" id="filter-name" name="query" class="sidebar-input" placeholder="Rechercher une catégorie" />
+        <button type="submit" class="sidebar-button">Rechercher</button>
+        <label for="filter-componant">Composants</label>
+        <select id="filter-componant" name="year" class="sidebar-input">
+          <option value="">Tout les composants</option>
+          <option value="Carte Mère">Carte Mère</option>
+          <option value="Carte Graphique">Carte Graphique</option>
+          <option value="Processeur">Processeur</option>
+          <option value="Écran">Écran</option>
+          <option value="RAM">RAM</option>
+          <option value="Stockage">Stockage</option>
+          <option value="Alimentation">Alimentation</option>
+          <option value="Refroidissement">Refroidissement</option>
+          <option value="accessoires">Accessoires</option>
+        </select>
+
+        <label for="filter-brand">Marque</label>
+        <select id="filter-brand" name="brand" class="sidebar-input">
+          <option value="">Toutes les marques</option>
+          <option value="Asus">Asus</option>
+          <option value="MSI">MSI</option>
+          <option value="Gigabyte">Gigabyte</option>
+          <option value="Intel">Intel</option>
+          <option value="AMD">AMD</option>
+          <option value="Nvidia">Nvidia</option>
+          <option value="Samsung">Samsung</option>
+          <option value="Corsair">Corsair</option>
+        </select>
+      </form>
+    </aside>
+  </div>
+
+  <div class="content">
+    <h2>Derniers Posts</h2>
+    <div class="grille">
+      {{ range .Posts }}
+      <div class="grid-item">
+        <a href="/post?id={{ .Id }}"></a>
+        <img src="{{ .Image }}" alt="{{ .Title }}" />
+        </a>
+        <h2>{{ .Title }}</h2>
+        <p>{{ .Content }}</p>
+      </div>
+      {{ end }}
+    </div>
+  </div>
+
+</body>
+
+</html>

@@ -1,11 +1,9 @@
-<!DOCTYPE html>
-<html lang="fr">
+<html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profil Utilisateur</title>
-    <link rel="stylesheet" href="/frontend/public/css/profile/style.css">
-    <script defer src="base.js"></script>
+    <link rel="stylesheet" href="../../../public/css/profile.css">
     <style>
         .bouton-image {
             position: fixed;
@@ -13,7 +11,7 @@
             left: 10px;
             width: 40px;
             height: 40px;
-            background: url('https://via.placeholder.com/40') no-repeat center center;
+            background: url('Forum/frontend/public/rsc/home/home.png') no-repeat center center;
             background-size: cover;
             border: none;
             cursor: pointer;
@@ -23,25 +21,37 @@
 <body>
     <button class="bouton-image" onclick="alert('Bouton cliqué !')"></button>
 </body>
-    
+
     <header>
         <h1>Profil de l'utilisateur</h1>
     </header>
-    
+
     <main>
         <section class="profil">
             <div class="avatar">
                 <img id="avatar" src="" alt="Avatar de l'utilisateur">
             </div>
-            <div class="infos">
-                <h2 id="username">Nom d'utilisateur</h2>
-                <p>Membre depuis : <span id="member-since">...</span></p>
-                <p>Rang : <span id="rank">...</span></p>
-                <p>Messages : <span id="messages">...</span></p>
-                <p>Localisation : <span id="location">...</span></p>
+
+            <div class="info-section">
+                <h2>Coordonnées</h2>
+                <div class="info-item">
+                    <span class="info-label">Email :</span>
+                    <span class="info-value" id="email"></span>
+                    <input type="email" id="email-input" class="hidden">
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Téléphone :</span>
+                    <span class="info-value" id="phone"></span>
+                    <input type="tel" id="phone-input" class="hidden">
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Adresse :</span>
+                    <span class="info-value" id="address"></span>
+                    <input type="text" id="address-input" class="hidden">
+                </div>
             </div>
         </section>
-        
+
         <section class="derniers-messages">
             <h2>Derniers messages</h2>
             <ul id="messages-list">
