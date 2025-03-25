@@ -12,8 +12,13 @@ type Notification struct {
     SourceID  int
     CreatedAt time.Time
 }
+
 func CreateNotification(db *sql.DB, userID int, notifType string, sourceID int) error {
-	_, err := db.Exec("INSERT INTO notification (...) VALUES (...)")
+	_, err := db.Exec(`
+		INSERT INTO notification (user_id, type, source_id) 
+		VALUES (?, ?, ?)`,
+		userID, notifType, sourceID,
+	)
 	return err
 }
 
