@@ -269,6 +269,43 @@ func GoogleCallbackHandler(db *sql.DB) http.HandlerFunc {
 	}
 }
 
+func GithubLoginHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		url := githubOAuthConfig.AuthCodeURL("randomstate")
+		fmt.Println("Redirection vers :", url)
+		http.Redirect(w, r, url, http.StatusTemporaryRedirect)
+	}
+}
+
+func GithubCallbackHandler(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		code := r.URL.Query().Get("code")
+
+		token, err := githubOAuthConfig.Exchange(context.Background(), code)
+		if err != nil {
+			http.Error(w, "Erreur lors de l'échange du token", http.StatusInternalServerError)
+			return
+		}
+
+		// Utilisation du client pour récupérer les infos de l'utilisateur via l'API GitHub
+		client := githubOAuthConfig.Client(context.Background(), token)
+		resp, err := client.Get("https://api.github.com/user")
+		if err != nil {
+			http.Error(w, "Erreur lors de la récupération des infos utilisateur", http.StatusInternalServerError)
+			return
+		}
+		defer resp.Body.Close()
+
+		userData, err := io.ReadAll(resp.Body)
+		if err != nil {
+			http.Error(w, "Erreur lors de la lecture des données utilisateur", http.StatusInternalServerError)
+			return
+		}
+		fmt.Println("Données utilisateur GitHub :", string(userData))
+
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+	}
+}
 
 func LoginHandler(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
