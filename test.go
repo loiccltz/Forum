@@ -9,39 +9,29 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-// Fonction pour tester la création et la récupération des notifications
-func testNotification(db *sql.DB) {
-	fmt.Println("🔹 Test : Ajout d'une notification...")
+// Fonction pour tester la création et la récupération des catégories
+func testCategory(db *sql.DB) {
+	fmt.Println("🔹 Test : Ajout d'une catégorie...")
 
-	// Ajouter une notification test
-	err := backend.CreateNotification(db, 1, "new_comment", 123)
+	// Ajouter une catégorie test
+	categoryName := "Technologie"
+	err := backend.CreateCategory(db, categoryName)
 	if err != nil {
-		log.Fatalf("❌ Erreur lors de l'ajout de la notification : %v", err)
+		log.Fatalf("❌ Erreur lors de l'ajout de la catégorie : %v", err)
 	} else {
-		fmt.Println("✅ Notification ajoutée avec succès.")
+		fmt.Println("✅ Catégorie ajoutée avec succès.")
 	}
 
-	// Vérifier si la notification a bien été insérée
-	fmt.Println("🔹 Test : Récupération des notifications...")
-	rows, err := db.Query("SELECT id, user_id, type, source_id, created_at FROM notification WHERE user_id = ?", 1)
+	// Vérifier si la catégorie a bien été insérée
+	fmt.Println("🔹 Test : Récupération des catégories...")
+	categories, err := backend.GetCategories(db)
 	if err != nil {
-		log.Fatalf("❌ Erreur lors de la récupération des notifications : %v", err)
+		log.Fatalf("❌ Erreur lors de la récupération des catégories : %v", err)
 	}
-	defer rows.Close()
 
-	fmt.Println("📜 Liste des notifications :")
-	for rows.Next() {
-		var id, userID, sourceID int
-		var notifType string
-		var createdAt string
-
-		err := rows.Scan(&id, &userID, &notifType, &sourceID, &createdAt)
-		if err != nil {
-			log.Fatalf("❌ Erreur lors du scan des résultats : %v", err)
-		}
-
-		fmt.Printf("🔔 Notification %d | Utilisateur: %d | Type: %s | Source: %d | Date: %s\n",
-			id, userID, notifType, sourceID, createdAt)
+	fmt.Println("📜 Liste des catégories :")
+	for _, c := range categories {
+		fmt.Printf("📂 ID: %d | Nom: %s\n", c.ID, c.Name)
 	}
 
 	fmt.Println("✅ Test terminé avec succès.")
@@ -56,5 +46,5 @@ func main() {
 	defer db.Close()
 
 	// Exécuter le test
-	testNotification(db)
+	testCategory(db)
 }
