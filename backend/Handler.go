@@ -405,3 +405,36 @@ func ActivityHandler(db *sql.DB) http.HandlerFunc {
     }
 }
 
+func UpdateUserRoleHandler(db *sql.DB) http.HandlerFunc {
+    return func(w http.ResponseWriter, r *http.Request) {
+        user := GetCurrentUser(db, r)
+        if user == nil || !IsAdmin(user) {
+            http.Error(w, "Accès refusé : seuls les admins peuvent modifier les rôles", http.StatusForbidden)
+            return
+        }
+
+        // Récupérer les paramètres, par exemple via un formulaire
+        targetUserIDStr := r.FormValue("user_id")
+        newRole := r.FormValue("role")
+        targetUserID, err := strconv.Atoi(targetUserIDStr)
+        if err != nil {
+            http.Error(w, "ID utilisateur invalide", http.StatusBadRequest)
+            return
+        }
+
+        // Vérifier que le nouveau rôle est valide
+        if newRole != "user" && newRole != "moderator" && newRole != "admin" {
+            http.Error(w, "Rôle invalide", http.StatusBadRequest)
+            return
+        }
+
+        // Mettre à jour le rôle dans la base de données
+        _, err = db.Exec("UPDATE user SET role = ? WHERE id = ?", newRole, targetUserID)
+        if err != nil {
+            http.Error(w, "Erreur lors de la mise à jour du rôle", http.StatusInternalServerError)
+            return
+        }
+
+        http.Redirect(w, r, "/admin", http.StatusSeeOther)
+    }
+}

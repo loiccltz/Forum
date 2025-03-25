@@ -30,7 +30,8 @@ func InitDB() (*sql.DB, error) {
 			username VARCHAR(255) NOT NULL,
 			email VARCHAR(255) NOT NULL UNIQUE,
 			password VARCHAR(255) NOT NULL,
-			session_token VARCHAR(64) DEFAULT '' NOT NULL
+			session_token VARCHAR(64) DEFAULT '' NOT NULL,
+			role ENUM('user', 'moderator', 'admin') NOT NULL DEFAULT 'user'
 		);
 	`)
 	if err != nil {
@@ -121,3 +122,4 @@ func InitDB() (*sql.DB, error) {
 	fmt.Println("✅ Connexion à MySQL réussie et tables créées !")
 	return db, nil
 }
+

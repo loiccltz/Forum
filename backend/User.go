@@ -12,7 +12,7 @@ type User struct {
 	Email        string
 	Password     string // hashé
 	SessionToken string
-	// ajouter le reste de nos propriété
+	Role         string
 }
 
 //insere un nouvel utilisateur dans la base de donnees
@@ -39,7 +39,7 @@ func (u *User) UpdateSessionToken(db *sql.DB, token string) error {
 
 func GetUserInfoByToken(db *sql.DB, token string) (*User, error) {
 	var user User
-	err := db.QueryRow("SELECT id, email, username FROM user WHERE session_token = ?", token).Scan(&user.ID, &user.Email, &user.Username)
+	err := db.QueryRow("SELECT id, email, username, role FROM user WHERE session_token = ?", token).Scan(&user.ID, &user.Email, &user.Username, &user.Role)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, errors.New("utilisateur non trouvé")
