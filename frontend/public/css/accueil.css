@@ -15,7 +15,8 @@ header .banner {     /*bandeau du haut */
   color: white;
   padding: 15px 0;
   z-index: 100;             
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);  }
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);  
+}
 
 header .banner h1 {     /*titre du bandeau du haut */
   margin: 0;
