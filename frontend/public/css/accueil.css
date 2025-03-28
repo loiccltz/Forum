@@ -38,6 +38,7 @@ body {      /*corps du forum */
   color: white;
   padding: 20px;
   box-sizing: border-box;
+  margin-right: 20px;
 }
 
 .sidebar h2 {     /*titre de la barre latérale */

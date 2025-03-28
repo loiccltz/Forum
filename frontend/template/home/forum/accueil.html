@@ -1,3 +1,4 @@
+{{define "accueil"}}
 <!DOCTYPE html>
 <html lang="fr">
 
@@ -5,6 +6,7 @@
   <meta charset="utf-8">
   <title>Tech-Talks</title>
   <link rel="stylesheet" href="../../../public/css/accueil.css">
+  <link rel="stylesheet" href="../../../public/css/article.css">
 </head>
 
 <body>
@@ -62,24 +64,10 @@
         </select>
       </form>
     </aside>
+    {{template "posts" .Posts}}
   </div>
-
-  <div class="content">
-    <h2>Derniers Posts</h2>
-    <div class="grille">
-      {{ range .Posts }}
-      <div class="grid-item">
-        <a href="/post?id={{ .Id }}"></a>
-        <img src="{{ .Image }}" alt="{{ .Title }}" />
-        </a>
-        <h2>{{ .Title }}</h2>
-        <p>{{ .Content }}</p>
-      </div>
-
-      {{ end }}
-    </div>
-  </div>
-
+  
 </body>
 
 </html>
+{{end}}

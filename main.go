@@ -5,23 +5,10 @@ import (
 	"fmt"
 	backend "forum/backend"
 	"github.com/joho/godotenv"
-	"html/template"
 	"log"
 	"net/http"
 	"os"
 )
-
-func home(w http.ResponseWriter, r *http.Request) {
-	var fileName = "./frontend/template/home/forum/accueil.html"
-	t, err := template.ParseFiles(fileName)
-	if err != nil {
-		fmt.Println("Erreur pendant le parsing", err)
-		http.Error(w, "Erreur interne", http.StatusInternalServerError)
-		return
-	}
-
-	t.Execute(w, nil)
-}
 
 var db *sql.DB
 
@@ -44,7 +31,7 @@ func main() {
 
 	fs := http.FileServer(http.Dir("./frontend/public/"))
 
-	http.Handle("/", backend.LimitRequest(http.HandlerFunc(home)))
+	http.Handle("/", backend.LimitRequest(http.HandlerFunc(backend.HomeHandler)))
 	http.Handle("/articles", backend.LimitRequest(http.HandlerFunc(backend.ArticlesHandler())))
 	http.Handle("/login", backend.LimitRequest(http.HandlerFunc(backend.LoginHandler(db))))
 	http.Handle("/register", backend.LimitRequest(http.HandlerFunc(backend.RegisterHandler(db))))

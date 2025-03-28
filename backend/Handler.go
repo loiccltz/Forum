@@ -6,11 +6,50 @@ import (
 	"fmt"
 	"html/template"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
 )
+
+func HomeHandler(w http.ResponseWriter, r *http.Request) {
+	db, err := InitDB()
+	if err != nil {
+		http.Error(w, "Database connection error", http.StatusInternalServerError)
+		return
+	}
+	defer db.Close()
+
+	// recup les posts
+	posts, err := GetPosts(db)
+	if err != nil {
+		http.Error(w, "Error fetching posts", http.StatusInternalServerError)
+		return
+	}
+
+	// il faut parser les templates
+	tmpl, err := template.ParseFiles(
+		"./frontend/template/home/forum/accueil.html", 
+		"./frontend/template/home/article/posts.html",
+	)
+	if err != nil {
+		log.Printf("Template parsing error: %v", err)
+		http.Error(w, "Template error", http.StatusInternalServerError)
+		return
+	}
+
+	// on donne les données des posts a la template
+	err = tmpl.ExecuteTemplate(w, "accueil", struct {
+		Posts []Post
+	}{
+		Posts: posts,
+	})
+	if err != nil {
+		log.Printf("Template execution error: %v", err)
+		http.Error(w, "Rendering error", http.StatusInternalServerError)
+	}
+}
 
 func RegisterHandler(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
