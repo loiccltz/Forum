@@ -438,3 +438,104 @@ func UpdateUserRoleHandler(db *sql.DB) http.HandlerFunc {
         http.Redirect(w, r, "/admin", http.StatusSeeOther)
     }
 }
+
+func ReportPostHandler(db *sql.DB) http.HandlerFunc {
+    return func(w http.ResponseWriter, r *http.Request) {
+        user := GetCurrentUser(db, r)
+        
+        if !IsModerator(user) {
+            http.Error(w, "Accès refusé : seuls les modérateurs peuvent signaler du contenu", http.StatusForbidden)
+            return
+        }
+
+        if r.Method == "POST" {
+            err := r.ParseForm()
+            if err != nil {
+                http.Error(w, "Erreur lors du traitement du formulaire", http.StatusBadRequest)
+                return
+            }
+
+            postIDStr := r.FormValue("post_id")
+            reason := r.FormValue("reason")
+            
+            postID, err := strconv.Atoi(postIDStr)
+            if err != nil {
+                http.Error(w, "ID de post invalide", http.StatusBadRequest)
+                return
+            }
+
+            err = CreatePostReport(db, user.ID, postID, reason)
+            if err != nil {
+                http.Error(w, "Erreur lors du signalement", http.StatusInternalServerError)
+                return
+            }
+
+            http.Redirect(w, r, fmt.Sprintf("/post?id=%d", postID), http.StatusSeeOther)
+        }
+    }
+}
+
+func ModeratorDashboardHandler(db *sql.DB) http.HandlerFunc {
+    return func(w http.ResponseWriter, r *http.Request) {
+        user := GetCurrentUser(db, r)
+        
+        if !IsModerator(user) {
+            http.Error(w, "Accès refusé : seuls les modérateurs peuvent accéder à ce tableau de bord", http.StatusForbidden)
+            return
+        }
+
+        if r.Method == "GET" {
+            reports, err := GetPendingReports(db)
+            if err != nil {
+                http.Error(w, "Erreur lors de la récupération des signalements", http.StatusInternalServerError)
+                return
+            }
+
+            tmpl, err := template.ParseFiles("frontend/template/moderation/dashboard.html")
+            if err != nil {
+                http.Error(w, "Erreur lors du chargement du tableau de bord", http.StatusInternalServerError)
+                return
+            }
+
+            tmpl.Execute(w, reports)
+        }
+    }
+}
+
+func ResolveReportHandler(db *sql.DB) http.HandlerFunc {
+    return func(w http.ResponseWriter, r *http.Request) {
+        user := GetCurrentUser(db, r)
+        
+        if !IsAdmin(user) {
+            http.Error(w, "Accès refusé : seuls les administrateurs peuvent résoudre les signalements", http.StatusForbidden)
+            return
+        }
+
+        if r.Method == "POST" {
+            err := r.ParseForm()
+            if err != nil {
+                http.Error(w, "Erreur lors du traitement du formulaire", http.StatusBadRequest)
+                return
+            }
+
+            reportIDStr := r.FormValue("report_id")
+            actionStr := r.FormValue("action")
+            
+            reportID, err := strconv.Atoi(reportIDStr)
+            if err != nil {
+                http.Error(w, "ID de signalement invalide", http.StatusBadRequest)
+                return
+            }
+
+            approve := (actionStr == "approve")
+
+            err = ResolveReport(db, reportID, user.ID, approve)
+            if err != nil {
+                http.Error(w, "Erreur lors du traitement du signalement", http.StatusInternalServerError)
+                return
+            }
+
+            http.Redirect(w, r, "/moderation/dashboard", http.StatusSeeOther)
+        }
+    }
+}

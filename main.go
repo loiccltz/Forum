@@ -56,6 +56,9 @@ func main() {
 	http.Handle("/auth/google/callback", backend.LimitRequest(http.HandlerFunc(backend.GoogleCallbackHandler(db))))
 	http.Handle("/profile", backend.LimitRequest(http.HandlerFunc(backend.ProfileHandler(db))))
 	http.Handle("/upload", backend.LimitRequest(http.HandlerFunc(backend.UploadImage)))
+	http.Handle("/report_post", backend.LimitRequest(http.HandlerFunc(backend.ReportPostHandler(db))))
+	http.Handle("/moderation/dashboard", backend.LimitRequest(http.HandlerFunc(backend.ModeratorDashboardHandler(db))))
+	http.Handle("/resolve_report", backend.LimitRequest(http.HandlerFunc(backend.ResolveReportHandler(db))))
 
 	http.Handle("/uploads/", http.StripPrefix("/uploads/", http.FileServer(http.Dir("uploads"))))
 	http.Handle("/public/", http.StripPrefix("/public/", fs))
@@ -72,6 +75,8 @@ func main() {
 	fmt.Println("🔹 Ajouter un commentaire : https://localhost/add_comment")
 	fmt.Println("🔹 Like/Dislike un post   : https://localhost/like_dislike")
 	fmt.Println("🔹 Profil utilisateur     : https://localhost/profile")
+	fmt.Println("🔹 Modération             : https://localhost/moderation/dashboard")
+	fmt.Println("🔹 Signaler un post       : https://localhost/report_post")
 
 	log.Println("✅ Serveur HTTPS actif : https://localhost")
 	backend.StartSecureServer(http.DefaultServeMux)
