@@ -1,13 +1,11 @@
 package backend
 
 import (
-	"crypto/rand"
 	"database/sql"
-	"encoding/hex"
 	"errors"
 	"fmt"
 	"net/http"
-
+	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -75,16 +73,10 @@ func Login(db *sql.DB, email, password string) (string, error) {
 	return token, nil
 }
 
-
-
-
+// Génération d'un token de session avec UUID
 func GenerateSessionToken() (string, error) {
-	bytes := make([]byte, 32) // 64 caractères hexadecimaux
-	_, err := rand.Read(bytes)
-	if err != nil {
-		return "", err
-	}
-	return hex.EncodeToString(bytes), nil
+	token := uuid.New().String() // Génère un UUID
+	return token, nil
 }
 
 func StoreSessionToken(db *sql.DB, email, token string) error {
