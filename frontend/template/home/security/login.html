@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/frontend/public/css/login.css">
+    <h2>Connexion</h2>
 </head>
 <body>
   <header>
@@ -11,31 +12,26 @@
     <div class="banner">
       <h1>Tech-Talks</h1>
     </div>
-    <button class="home-button">
+    <a class="home-button"  href="/frontend/template/home/forum/accueil.html">
       <img src="/frontend/public/rsc/home/home.png" alt="Accueil">
-    </button>
-    <button class="forum-button">
-      <img src="/frontend/public/rsc/forum/forum.png" alt="Forum">
-    </button>
-    <a class="profil-button" href="/profile">
+    </a>
+    <a class="profil-button" href="/frontend/template/home/profile/profil.html">
       <img src="/frontend/public/rsc/profil/pp profil sans compte-1.png" alt="Profil">
     </a>
-    <button class="à-propos-button">
+    <a class="à-propos-button" href="/frontend/template/home/secondary/about.html">
       <img src="/frontend/public/rsc/à propos/download-1.png.png" alt="À propos">
-    </button>
+    </a>
   </header>
-  
-    <h2>Connexion</h2>
-    <br>
+
+    <div class="main-container">
+        <div class="content">
+            <h3>Connectez-vous</h3>
     <form action="/login" method="POST">
-      <h>Email :</h>
         <label for="email"></label>
-        <input type="email" id="email" name="email" required>
-        <br>
-        <br>
-        <h>Mot de passe :</h>
+        <input type="email" id="email" name="email" placeholder="Email" required>
+        
         <label for="password"></label>
-        <input type="password" id="password" name="password" required>
+        <input type="password" id="password" name="password" placeholder="Mot de passe" required>
         <br>
 
         <button type="submit">Se connecter</button>
@@ -46,6 +42,9 @@
       
       <a href="/auth/github">
         <button>Se connecter avec GitHub</button>
-      </a>          
+      </a>   
+      <div class="Inscription">
+            <p>Vous n'avez pas de compte ? <a href="/frontend/template/home/registration/index.html">Inscrivez-vous</a></p>
+        </div>
 </body>
 </html>
