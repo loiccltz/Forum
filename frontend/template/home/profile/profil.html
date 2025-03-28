@@ -3,15 +3,34 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profil Utilisateur</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="/frontend/public/css/profil.css">
     <script src="script.js"></script>
 </head>
 <body>
+    <header>
+        <div class="banner">
+          <h6>Tech-Talks</h6>
+        </div>
+        <button class="home-button" href="/">
+          <img src="/frontend/public/rsc/home/home.png" alt="accueil" />
+        </button>
+        <button class="forum-button">
+          <img src="/frontend/public/rsc/forum/forum.png" alt="forum" />
+        </button>
+        <a class="profil-button" href="/profile">
+          <img src="../../../public/rsc/profil/pp profil sans compte.png" alt="profil" />
+        </a>
+        <button class="à-propos-button">
+          <img src="/frontend/public/rsc/à propos/download-1.png.png" alt="à propos" href="/à-propos" />
+        </button>
+      </header>
     <div class="container">
         <h1>Profil Utilisateur</h1>
-        <div id="theme-selector">
         </div>
-        <div class="profile-picture" id="profile-picture"></div>
+            <br>
+        <div class="profile-picture" id="profile-picture">
+            <img src="../../../public/rsc/profil/pp profil sans compte.png">
+        </div>
         <form id="profile-form" method="GET" action="update-profile">
             <div class="info-section">
                 <h2>Informations Personnelles</h2>
@@ -38,7 +57,7 @@
             </div>
 
             <div class="info-section">
-                <h2>Coordonnées</h2>
+                <h3>Coordonnées</h3>
                 <div class="info-item">
                     <span class="info-label">Email :</span>
                     <span class="info-value" id="email"></span>
@@ -55,6 +74,7 @@
                     <input type="text" id="address-input" class="hidden">
                 </div>
             </div>
+            
 
             <div class="info-section">
                 <h2>Informations Professionnelles</h2>
@@ -71,7 +91,7 @@
             </div>
             <button type="button" id="edit-btn" class="btn">Modifier</button>
             <button type="submit" id="save-btn" class="btn hidden">Enregistrer</button>
-        </form>
+    </form>
     </div>
 </body>
 </html>

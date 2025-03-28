@@ -3,17 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connexion</title>
-    <link rel="stylesheet" href="/public/css/style.css">
+    <link rel="stylesheet" href="/frontend/public/css/login.css">
 </head>
 <body>
+  <header>
+    
+    <div class="banner">
+      <h1>Tech-Talks</h1>
+    </div>
+    <button class="home-button">
+      <img src="/frontend/public/rsc/home/home.png" alt="Accueil">
+    </button>
+    <button class="forum-button">
+      <img src="/frontend/public/rsc/forum/forum.png" alt="Forum">
+    </button>
+    <a class="profil-button" href="/profile">
+      <img src="/frontend/public/rsc/profil/pp profil sans compte-1.png" alt="Profil">
+    </a>
+    <button class="à-propos-button">
+      <img src="/frontend/public/rsc/à propos/download-1.png.png" alt="À propos">
+    </button>
+  </header>
+  
     <h2>Connexion</h2>
+    <br>
     <form action="/login" method="POST">
-        <label for="email">Email : </label>
+      <h>Email :</h>
+        <label for="email"></label>
         <input type="email" id="email" name="email" required>
-
-        <label for="password">Mot de passe :</label>
+        <br>
+        <br>
+        <h>Mot de passe :</h>
+        <label for="password"></label>
         <input type="password" id="password" name="password" required>
+        <br>
 
         <button type="submit">Se connecter</button>
     </form>
