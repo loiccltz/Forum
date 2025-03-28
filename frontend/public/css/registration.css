@@ -244,15 +244,21 @@ content {
 }
 
 h2 {
+  background-color: #2a475e;
   color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 5px;
+  cursor: pointer;
   font-weight: bold;
-  margin-bottom: 20px;
+  transition: background-color 0.3s ease; 
 }
 
 h3 {
   color: white;
   font-weight: bold;
   margin-bottom: 20px;
+  text-align: center;
 }
 
 form {
@@ -270,7 +276,6 @@ input {
   border-radius: 5px;
   font-size: 16px;
   width: 100%;
-  
 }
 
 button {
@@ -291,4 +296,9 @@ button:hover {
 a button {
   width: 100%;
   margin-top: 5px;
+}
+
+.Inscription {
+  color: white;
+  margin-top: 20px;
 }
