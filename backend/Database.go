@@ -119,6 +119,28 @@ func InitDB() (*sql.DB, error) {
 		return nil, fmt.Errorf("❌ Erreur lors de la création de la table like_dislike : %v", err)
 	}
 
+	_, err = db.Exec(`
+	CREATE TABLE IF NOT EXISTS post_reports (
+		id INT AUTO_INCREMENT PRIMARY KEY,
+		reporter_id INT NOT NULL,
+		post_id INT,
+		comment_id INT,
+		reason VARCHAR(255) NOT NULL,
+		status ENUM('pending', 'approved', 'rejected') DEFAULT 'pending',
+		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+		resolved_at TIMESTAMP NULL,
+		resolved_by_id INT,
+		FOREIGN KEY (reporter_id) REFERENCES user(id),
+		FOREIGN KEY (post_id) REFERENCES post(id) ON DELETE CASCADE,
+		FOREIGN KEY (comment_id) REFERENCES comment(id) ON DELETE CASCADE,
+		FOREIGN KEY (resolved_by_id) REFERENCES user(id)
+	);
+	`)
+	if err != nil {
+	db.Close()
+	return nil, fmt.Errorf("❌ Erreur lors de la création de la table post_reports : %v", err)
+	}
+
 	fmt.Println("✅ Connexion à MySQL réussie et tables créées !")
 	return db, nil
 }
