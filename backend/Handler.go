@@ -539,3 +539,46 @@ func ResolveReportHandler(db *sql.DB) http.HandlerFunc {
         }
     }
 }
+
+func NotificationHandler(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// Récupérer le token de session
+		cookie, err := r.Cookie("session_token")
+		if err != nil {
+			http.Error(w, "Utilisateur non authentifié", http.StatusUnauthorized)
+			return
+		}
+
+		// Récupérer les infos de l'utilisateur
+		user, err := GetUserInfoByToken(db, cookie.Value)
+		if err != nil {
+			http.Error(w, "Erreur lors de la récupération de l'utilisateur", http.StatusInternalServerError)
+			return
+		}
+
+		// Récupérer les notifications en utilisant la fonction existante GetUserNotifications
+		notifications, err := GetUserNotifications(db, user.ID)
+		if err != nil {
+			http.Error(w, "Erreur lors de la récupération des notifications", http.StatusInternalServerError)
+			return
+		}
+
+		// Passer les notifications à la vue
+		tmpl, err := template.ParseFiles("frontend/template/home/notification/notifications.html")
+		if err != nil {
+			http.Error(w, "Erreur lors du chargement de la page des notifications", http.StatusInternalServerError)
+			return
+		}
+
+		data := struct {
+			User          User
+			Notifications []Notification
+		}{
+			User:          *user,
+			Notifications: notifications,
+		}
+
+		// Exécuter le template
+		tmpl.Execute(w, data)
+	}
+}

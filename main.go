@@ -59,6 +59,7 @@ func main() {
 	http.Handle("/report_post", backend.LimitRequest(http.HandlerFunc(backend.ReportPostHandler(db))))
 	http.Handle("/moderation/dashboard", backend.LimitRequest(http.HandlerFunc(backend.ModeratorDashboardHandler(db))))
 	http.Handle("/resolve_report", backend.LimitRequest(http.HandlerFunc(backend.ResolveReportHandler(db))))
+	http.Handle("/notification", backend.LimitRequest(http.HandlerFunc(backend.NotificationHandler(db))))
 
 	http.Handle("/uploads/", http.StripPrefix("/uploads/", http.FileServer(http.Dir("uploads"))))
 	http.Handle("/public/", http.StripPrefix("/public/", fs))
@@ -77,6 +78,7 @@ func main() {
 	fmt.Println("🔹 Profil utilisateur     : https://localhost/profile")
 	fmt.Println("🔹 Modération             : https://localhost/moderation/dashboard")
 	fmt.Println("🔹 Signaler un post       : https://localhost/report_post")
+	fmt.Println("🔹 notifications          : https://localhost/notification")
 
 	log.Println("✅ Serveur HTTPS actif : https://localhost")
 	backend.StartSecureServer(http.DefaultServeMux)

@@ -8,8 +8,8 @@ import (
 
 // InitDB initialise la connexion à la base de données MySQL
 func InitDB() (*sql.DB, error) {
-	// Connexion locale
-	dsn := "root:localpassword@tcp(127.0.0.1:3306)/forum"
+	
+	dsn := "admin:hardpassword@tcp(forum.cjoaea48gf89.eu-north-1.rds.amazonaws.com:3306)/forum"
 	
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {

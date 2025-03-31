@@ -3,6 +3,7 @@ package backend
 import (
 	"database/sql"
 	"time"
+    "fmt"
 )
 
 type Notification struct {
@@ -32,10 +33,21 @@ func GetUserNotifications(db *sql.DB, userID int) ([]Notification, error) {
     var notifications []Notification
     for rows.Next() {
         var n Notification
-        err := rows.Scan(&n.ID, &n.Type, &n.SourceID, &n.CreatedAt)
+        var createdAt []byte // Champ `created_at` récupéré sous forme de []byte
+        
+        // Scanner les valeurs de la ligne dans les variables correspondantes
+        err := rows.Scan(&n.ID, &n.Type, &n.SourceID, &createdAt)
         if err != nil {
             return nil, err
         }
+
+        // Convertir `createdAt` de []byte en time.Time
+        n.CreatedAt, err = time.Parse("2006-01-02 15:04:05", string(createdAt))
+        if err != nil {
+            return nil, fmt.Errorf("erreur lors de la conversion de la date : %v", err)
+        }
+
+        // Ajouter la notification à la liste
         notifications = append(notifications, n)
     }
     return notifications, nil

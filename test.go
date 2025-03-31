@@ -9,32 +9,32 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-// Fonction pour tester la création et la récupération des catégories
-func testCategory(db *sql.DB) {
-	fmt.Println("🔹 Test : Ajout d'une catégorie...")
+// Fonction pour tester la création et la récupération des notifications
+func testNotification(db *sql.DB) {
+	// Utilisateur avec ID 4 pour tester
+	userID := 4
+	notifType := "Nouveau commentaire"
+	sourceID := 123 // L'ID du post ou autre source d'une notification
 
-	// Ajouter une catégorie test
-	categoryName := "Technologie"
-	err := backend.CreateCategory(db, categoryName)
+	// Créer une notification pour cet utilisateur
+	err := backend.CreateNotification(db, userID, notifType, sourceID)
 	if err != nil {
-		log.Fatalf("❌ Erreur lors de l'ajout de la catégorie : %v", err)
+		log.Fatalf("❌ Erreur lors de la création de la notification : %v", err)
 	} else {
-		fmt.Println("✅ Catégorie ajoutée avec succès.")
+		fmt.Println("✅ Notification ajoutée avec succès.")
 	}
 
-	// Vérifier si la catégorie a bien été insérée
-	fmt.Println("🔹 Test : Récupération des catégories...")
-	categories, err := backend.GetCategories(db)
+	// Vérifier si la notification a bien été ajoutée
+	notifications, err := backend.GetUserNotifications(db, userID)
 	if err != nil {
-		log.Fatalf("❌ Erreur lors de la récupération des catégories : %v", err)
+		log.Fatalf("❌ Erreur lors de la récupération des notifications : %v", err)
 	}
 
-	fmt.Println("📜 Liste des catégories :")
-	for _, c := range categories {
-		fmt.Printf("📂 ID: %d | Nom: %s\n", c.ID, c.Name)
+	// Afficher les notifications
+	fmt.Println("📜 Liste des notifications :")
+	for _, notif := range notifications {
+		fmt.Printf("🔔 ID: %d | Type: %s | Source ID: %d | Date: %v\n", notif.ID, notif.Type, notif.SourceID, notif.CreatedAt)
 	}
-
-	fmt.Println("✅ Test terminé avec succès.")
 }
 
 func main() {
@@ -45,6 +45,6 @@ func main() {
 	}
 	defer db.Close()
 
-	// Exécuter le test
-	testCategory(db)
+	// Exécuter le test des notifications
+	testNotification(db)
 }
