@@ -22,7 +22,13 @@ func CreatePost(db *sql.DB, title, content, imageURL string, authorID int, categ
     }
     
     postID, _ := result.LastInsertId()
-    
+
+    // Créer une notification pour l'utilisateur auteur du post
+    err = CreateNotification(db, authorID, "Post créé", int(postID))
+    if err != nil {
+        return fmt.Errorf("Erreur lors de la création de la notification: %v", err)
+    }
+
     for _, catID := range categories {
         _, err := db.Exec("INSERT INTO post_category VALUES (?, ?)", postID, catID)
         if err != nil {
@@ -33,26 +39,54 @@ func CreatePost(db *sql.DB, title, content, imageURL string, authorID int, categ
 }
 
 func AddComment(db *sql.DB, content string, authorID, postID int) error {
-	_, err := db.Exec("INSERT INTO comment (content, author_id, post_id) VALUES (?, ?, ?)", content, authorID, postID)
-	if err != nil {
-		fmt.Println("Erreur lors de l'ajout du commentaire :", err)
-		return err
-	}
-	fmt.Println("✅ Commentaire ajouté avec succès.")
-	return nil
+    _, err := db.Exec("INSERT INTO comment (content, author_id, post_id) VALUES (?, ?, ?)", content, authorID, postID)
+    if err != nil {
+        fmt.Println("Erreur lors de l'ajout du commentaire :", err)
+        return err
+    }
+    fmt.Println("✅ Commentaire ajouté avec succès.")
+
+    // Récupérer l'auteur du post pour lui envoyer une notification
+    var postAuthorID int
+    err = db.QueryRow("SELECT author_id FROM post WHERE id = ?", postID).Scan(&postAuthorID)
+    if err != nil {
+        return fmt.Errorf("Erreur lors de la récupération de l'auteur du post: %v", err)
+    }
+
+    // Créer une notification pour l'auteur du post
+    err = CreateNotification(db, postAuthorID, "Nouveau commentaire sur votre post", postID)
+    if err != nil {
+        return fmt.Errorf("Erreur lors de la création de la notification pour le commentaire: %v", err)
+    }
+
+    return nil
 }
 
 func LikePost(db *sql.DB, userID, postID, likeType int) error {
 	_, err := db.Exec(`
 		INSERT INTO like_dislike (user_id, post_id, type)
 		VALUES (?, ?, ?)
-		ON CONFLICT(user_id, post_id) 
-		DO UPDATE SET type = excluded.type;
+		ON DUPLICATE KEY UPDATE type = VALUES(type);
 	`, userID, postID, likeType)
 	if err != nil {
 		fmt.Println("Erreur lors du like/dislike :", err)
 	}
 	return err
+
+    // Récupérer l'auteur du post
+    var postAuthorID int
+    err = db.QueryRow("SELECT author_id FROM post WHERE id = ?", postID).Scan(&postAuthorID)
+    if err != nil {
+        return fmt.Errorf("Erreur lors de la récupération de l'auteur du post: %v", err)
+    }
+
+    // Créer une notification pour l'auteur du post
+    err = CreateNotification(db, postAuthorID, "Votre post a été aimé", postID)
+    if err != nil {
+        return fmt.Errorf("Erreur lors de la création de la notification pour le like: %v", err)
+    }
+
+    return nil
 }
 
 func GetPosts(db *sql.DB) ([]Post, error) {
