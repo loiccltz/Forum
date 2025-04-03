@@ -201,7 +201,7 @@ header .banner h1 {     /*titre du bandeau du haut */
   max-width: 600px;
   margin: 0 auto;
   background-color: var(--container-bg);
-  padding: 30px;
+  padding: 10px;
   border-radius: 8px;
   box-shadow: 0 0 10px rgba(209, 16, 16, 0.1);
   transition: all 0.3s ease;
@@ -354,4 +354,50 @@ input[type="date"] {
   .info-label {
     margin-bottom: 5px;
   }
+}
+
+.logout-container {
+  text-align: center;
+  margin-top: 20px;
+  
+}
+
+.logout-container h5 {
+  margin-bottom: 5px; 
+}
+
+.logout-button {
+  display: block; 
+  margin: 0 auto; 
+  position: relative; 
+  max-width:650px;
+  background-color: var(--button-color);
+  border-radius: 5px;
+}
+
+
+.logout-button img {     
+  max-width: 50px;          
+  max-height: 50px;
+}
+
+.h5 {
+  color: var(--primary-color);
+  text-align: center;
+  margin-bottom: 1px;
+  margin-top: 1px;
+}
+
+.logout-container h5 {
+  
+  border-radius: 5px;
+}
+
+.logout-container h5 {
+  color: var(--primary-color);
+  border-bottom: 2px solid var(--border-color);
+  padding-bottom: px;
+  margin-bottom: 5px;
+  background-color: var(--container-bg);
+  border-radius: 5px;
 }
