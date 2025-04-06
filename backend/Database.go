@@ -9,7 +9,7 @@ import (
 // InitDB initialise la connexion à la base de données MySQL
 func InitDB() (*sql.DB, error) {
 	// AWS
-	dsn := "admin:hardpassword@tcp(forum.cjoaea48gf89.eu-north-1.rds.amazonaws.com:3306)/forum"
+	dsn := "root:Test@tcp(127.0.0.1:3306)/forum"
 
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
@@ -51,6 +51,22 @@ func InitDB() (*sql.DB, error) {
 	if err != nil {
 		db.Close()
 		return nil, fmt.Errorf("❌ Erreur lors de la création de la table product : %v", err)
+	}
+
+	_, err = db.Exec(`
+    CREATE TABLE IF NOT EXISTS comment (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        content TEXT NOT NULL,
+        author_id INT NOT NULL,
+        post_id INT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (author_id) REFERENCES user(id) ON DELETE CASCADE,
+        FOREIGN KEY (post_id) REFERENCES post(id) ON DELETE CASCADE
+    );
+`)
+	if err != nil {
+		db.Close()
+		return nil, fmt.Errorf("❌ Erreur lors de la création de la table comment : %v", err)
 	}
 
 	fmt.Println("✅ Connexion à MySQL réussie et tables créées !")
