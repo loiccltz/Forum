@@ -4,8 +4,8 @@
 <head>
   <meta charset="utf-8">
   <title>Tech-Talks - {{.Post.Title}}</title>
-  <link rel="stylesheet" href="../../../public/css/accueil.css">
-  <link rel="stylesheet" href="../../../public/css/article.css">
+  <link rel="stylesheet" href="/frontend/public/css/accueil.css">
+  <link rel="stylesheet" href="/frontend/public/css/post.css">
 </head>
 
 <body>
@@ -20,7 +20,7 @@
       <img src="/frontend/public/rsc/forum/forum.png" alt="forum" />
     </button>
     <a class="profil-button" href="/profile">
-      <img src="../../../public/rsc/profil/pp profil sans compte.png" alt="profil" />
+      <img src="/frontend/public/rsc/profil/pp profil sans compte.png" alt="profil" />
     </a>
     <button class="à-propos-button">
       <img src="/frontend/public/rsc/à propos/download-1.png.png" alt="à propos" />
@@ -33,7 +33,7 @@
       <h1>{{.Post.Title}}</h1>
       {{if .Post.ImageURL}}
       <div class="post-image">
-        <img src="{{.Post.ImageURL}}" alt="{{.Post.Title}}" />
+        <img src="/{{.Post.ImageURL}}" alt="{{.Post.Title}}" />
       </div>
       {{end}}
       <div class="post-content">
@@ -41,8 +41,16 @@
       </div>
       
       <div class="post-actions">
-        <button class="btn like" data-post-id="{{.Post.ID}}">Like</button>
-        <button class="btn dislike" data-post-id="{{.Post.ID}}">Dislike</button>
+        <form method="POST" action="/post/{{.Post.ID}}/like">
+          <input type="hidden" name="post_id_like" value="{{.Post.ID}}">
+          <input type="hidden" name="like_type" value="1">
+          <button type="submit" class="btn like">Like ({{.Likes}})</button>
+        </form>
+        <form method="POST" action="/post/{{.Post.ID}}/like">
+          <input type="hidden" name="post_id_like" value="{{.Post.ID}}">
+          <input type="hidden" name="like_type" value="0">
+          <button type="submit" class="btn dislike">Dislike ({{.Dislikes}})</button>
+        </form>
       </div>
       
       <div class="comments-section">

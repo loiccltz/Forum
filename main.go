@@ -4,10 +4,12 @@ import (
 	"database/sql"
 	"fmt"
 	backend "forum/backend"
-	"github.com/joho/godotenv"
 	"log"
 	"net/http"
 	"os"
+	"strings"
+
+	"github.com/joho/godotenv"
 )
 
 var db *sql.DB
@@ -41,6 +43,25 @@ func main() {
 	http.Handle("/auth/google", backend.LimitRequest(http.HandlerFunc(backend.GoogleLoginHandler())))
 	http.Handle("/auth/google/callback", backend.LimitRequest(http.HandlerFunc(backend.GoogleCallbackHandler(db))))
 	http.Handle("/profile", backend.LimitRequest(http.HandlerFunc(backend.ProfileHandler(db))))
+	// Mise à jour du routage
+	http.HandleFunc("/post/", func(w http.ResponseWriter, r *http.Request) {
+		path := r.URL.Path
+
+		// Route pour les commentaires
+		if strings.HasSuffix(path, "/comment") {
+			backend.AddCommentHandler(db)(w, r)
+			return
+		}
+
+		// Route pour les likes
+		if strings.HasSuffix(path, "/like") {
+			backend.LikePostHandler(db)(w, r)
+			return
+		}
+
+		// Affichage du post
+		backend.PostDetailHandler(db)(w, r)
+	})
 
 	http.Handle("/uploads/", http.StripPrefix("/uploads/", http.FileServer(http.Dir("uploads"))))
 	http.Handle("/public/", http.StripPrefix("/public/", fs))
