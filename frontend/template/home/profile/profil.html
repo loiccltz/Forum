@@ -34,35 +34,29 @@
             <div class="info-section">
                 <h2>Informations du Compte</h2>
                 <div class="info-item">
-                    <span class="info-label">Nom du Compte :</span>
+                    <span class="info-label">Pseudo :</span>
                     <span class="info-value" id="name"></span>
-                    <input type="text" id="name-input" class="hidden"
-                    
+                    <input type="text" id="name-input" class="hidden">
+                </div>
                 <div class="info-item">
                 <span class="info-label">Email :</span>
                 <span class="info-value" id="email"></span>
-                <input type="email" id="email-input" class="hidden"
+                <input type="email" id="email-input" class="hidden">
                 </div>
 
-            <div class="posts-section">
-                <h3>Posts envoyés</h3>
-
-            </div>
-            <div class="info-section">
-                <h2>Informations Professionnelles</h2>
-                <div class="info-item">
-                    <span class="info-label">Profession :</span>
-                    <span class="info-value" id="profession"></span>
-                    <input type="text" id="profession-input" class="hidden">
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Entreprise :</span>
-                    <span class="info-value" id="company"></span>
-                    <input type="text" id="company-input" class="hidden">
-                </div>
-            </div>
-            <a href="/frontend/template/home/profile/profil modif.html" id="edit-btn" class="btn">Modifier</a>
-    </form>
+                    <div class="posts-section">
+    <h3>Posts envoyés</h3>
+    
     </div>
+    <div class="logout-container">
+              <h5>Déconnexion</h5>
+              <a class="logout-button" href="/frontend/template/home/security/logout.html">
+    <img src="/frontend/public/rsc/logout/logout.png" alt="Déconnexion">
+</a>
+    </div>
+            </div>
+                <button type="submit" id="save-button" class="hidden">Enregistrer</button>
+            </div>
+        </form>   
 </body>
 </html>
