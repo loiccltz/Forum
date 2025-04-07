@@ -95,6 +95,21 @@ func InitDB() (*sql.DB, error) {
 	}
 
 	_, err = db.Exec(`
+	CREATE TABLE IF NOT EXISTS comment (
+		id INT AUTO_INCREMENT PRIMARY KEY,
+		content TEXT NOT NULL,
+		author_id INT NOT NULL,
+		post_id INT NOT NULL,
+		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+		FOREIGN KEY (author_id) REFERENCES user(id) ON DELETE CASCADE,
+		FOREIGN KEY (post_id) REFERENCES post(id) ON DELETE CASCADE
+	);
+`)
+	if err != nil {
+		db.Close()
+		return nil, fmt.Errorf(" Erreur lors de la création de la table comment : %v", err)
+	}
+	_, err = db.Exec(`
 	CREATE TABLE IF NOT EXISTS post_reports (
 		id INT AUTO_INCREMENT PRIMARY KEY,
 		reporter_id INT NOT NULL,
@@ -114,21 +129,6 @@ func InitDB() (*sql.DB, error) {
 	if err != nil {
 	db.Close()
 	return nil, fmt.Errorf("❌ Erreur lors de la création de la table post_reports : %v", err)
-
-	_, err = db.Exec(`
-    CREATE TABLE IF NOT EXISTS comment (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        content TEXT NOT NULL,
-        author_id INT NOT NULL,
-        post_id INT NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (author_id) REFERENCES user(id) ON DELETE CASCADE,
-        FOREIGN KEY (post_id) REFERENCES post(id) ON DELETE CASCADE
-    );
-`)
-	if err != nil {
-		db.Close()
-		return nil, fmt.Errorf(" Erreur lors de la création de la table comment : %v", err)
 	}
 
 	_, err = db.Exec(`

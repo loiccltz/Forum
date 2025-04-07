@@ -225,7 +225,7 @@ body {      /*corps du forum */
           left: 10px;
           width: 40px;
           height: 40px;
-          background: url('Forum/frontend/public/rsc/home/home.png') no-repeat center center;
+          background: url('Forum/frontend/public/src/home/home.png') no-repeat center center;
           background-size: cover;
           border: none;
           cursor: pointer;

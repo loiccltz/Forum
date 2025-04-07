@@ -392,6 +392,44 @@ func GoogleCallbackHandler(db *sql.DB) http.HandlerFunc {
 	}
 }
 
+func GithubLoginHandler() http.HandlerFunc {
+    return func(w http.ResponseWriter, r *http.Request) {
+        url := githubOAuthConfig.AuthCodeURL("randomstate")
+        fmt.Println("Redirection vers :", url)
+        http.Redirect(w, r, url, http.StatusTemporaryRedirect)
+    }
+}
+
+func GithubCallbackHandler(db *sql.DB) http.HandlerFunc {
+    return func(w http.ResponseWriter, r *http.Request) {
+        code := r.URL.Query().Get("code")
+
+        token, err := githubOAuthConfig.Exchange(context.Background(), code)
+        if err != nil {
+            http.Error(w, "Erreur lors de l'échange du token", http.StatusInternalServerError)
+            return
+        }
+
+        // Utilisation du client pour récupérer les infos de l'utilisateur via l'API GitHub
+        client := githubOAuthConfig.Client(context.Background(), token)
+        resp, err := client.Get("https://api.github.com/user")
+        if err != nil {
+            http.Error(w, "Erreur lors de la récupération des infos utilisateur", http.StatusInternalServerError)
+            return
+        }
+        defer resp.Body.Close()
+
+        userData, err := io.ReadAll(resp.Body)
+        if err != nil {
+            http.Error(w, "Erreur lors de la lecture des données utilisateur", http.StatusInternalServerError)
+            return
+        }
+        fmt.Println("Données utilisateur GitHub :", string(userData))
+
+        http.Redirect(w, r, "/", http.StatusSeeOther)
+    }
+} 
+
 func LoginHandler(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == "GET" {
@@ -437,16 +475,31 @@ func LoginHandler(db *sql.DB) http.HandlerFunc {
 
 func ProfileHandler(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		// Vérifier d'abord si l'utilisateur est authentifié
+		if !IsAuthenticated(r) {
+			http.Redirect(w, r, "/login", http.StatusSeeOther)
+			return
+		}
+		
 		// Récupérer le token depuis le cookie
 		cookie, err := r.Cookie("session_token")
 		if err != nil {
-			http.Error(w, "Utilisateur non authentifié", http.StatusUnauthorized)
+			fmt.Println("Erreur cookie:", err)
+			http.Redirect(w, r, "/login", http.StatusSeeOther)
+			return
+		}
+		
+		// Vérifier que le token n'est pas vide
+		if cookie.Value == "" {
+			fmt.Println("Token vide dans le cookie")
+			http.Redirect(w, r, "/login", http.StatusSeeOther)
 			return
 		}
 
 		// Récupérer les informations de l'utilisateur
 		user, err := GetUserInfoByToken(db, cookie.Value)
 		if err != nil {
+			fmt.Printf("Erreur GetUserInfoByToken: %v\n", err)
 			http.Error(w, "Erreur lors de la récupération des informations de l'utilisateur", http.StatusInternalServerError)
 			return
 		}
@@ -454,11 +507,222 @@ func ProfileHandler(db *sql.DB) http.HandlerFunc {
 		// Passer les informations de l'utilisateur à la vue
 		tmpl, err := template.ParseFiles("frontend/template/home/profile/profil.html")
 		if err != nil {
+			fmt.Printf("Erreur parsing template: %v\n", err)
 			http.Error(w, "Erreur lors du chargement de la page de profil", http.StatusInternalServerError)
 			return
 		}
 
 		// Rendre la page avec les données utilisateur
-		tmpl.Execute(w, user)
+		err = tmpl.Execute(w, user)
+		if err != nil {
+			fmt.Printf("Erreur exécution template: %v\n", err)
+		}
 	}
 }
+
+func GetCurrentUser(db *sql.DB, r *http.Request) *User {
+    cookie, err := r.Cookie("session_token")
+    if err != nil {
+        return nil
+    }
+
+    user, err := GetUserInfoByToken(db, cookie.Value) 
+    if err != nil {
+        return nil
+    }
+
+    return user
+}
+
+func ActivityHandler(db *sql.DB) http.HandlerFunc {
+    return func(w http.ResponseWriter, r *http.Request) {
+        user := GetCurrentUser(db, r)
+        if user == nil {
+            http.Error(w, "Utilisateur non authentifié", http.StatusUnauthorized)
+            return
+        }
+
+        fmt.Fprintf(w, "Activités de l'utilisateur : %s", user.Username)
+    }
+}
+
+func UpdateUserRoleHandler(db *sql.DB) http.HandlerFunc {
+    return func(w http.ResponseWriter, r *http.Request) {
+        user := GetCurrentUser(db, r)
+        if user == nil || !IsAdmin(user) {
+            http.Error(w, "Accès refusé : seuls les admins peuvent modifier les rôles", http.StatusForbidden)
+            return
+        }
+
+        // Récupérer les paramètres, par exemple via un formulaire
+        targetUserIDStr := r.FormValue("user_id")
+        newRole := r.FormValue("role")
+        targetUserID, err := strconv.Atoi(targetUserIDStr)
+        if err != nil {
+            http.Error(w, "ID utilisateur invalide", http.StatusBadRequest)
+            return
+        }
+
+        // Vérifier que le nouveau rôle est valide
+        if newRole != "user" && newRole != "moderator" && newRole != "admin" {
+            http.Error(w, "Rôle invalide", http.StatusBadRequest)
+            return
+        }
+
+        // Mettre à jour le rôle dans la base de données
+        _, err = db.Exec("UPDATE user SET role = ? WHERE id = ?", newRole, targetUserID)
+        if err != nil {
+            http.Error(w, "Erreur lors de la mise à jour du rôle", http.StatusInternalServerError)
+            return
+        }
+
+        http.Redirect(w, r, "/admin", http.StatusSeeOther)
+    }
+}
+
+func ReportPostHandler(db *sql.DB) http.HandlerFunc {
+    return func(w http.ResponseWriter, r *http.Request) {
+        user := GetCurrentUser(db, r)
+        
+        if !IsModerator(user) {
+            http.Error(w, "Accès refusé : seuls les modérateurs peuvent signaler du contenu", http.StatusForbidden)
+            return
+        }
+
+        if r.Method == "POST" {
+            err := r.ParseForm()
+            if err != nil {
+                http.Error(w, "Erreur lors du traitement du formulaire", http.StatusBadRequest)
+                return
+            }
+
+            postIDStr := r.FormValue("post_id")
+            reason := r.FormValue("reason")
+            
+            postID, err := strconv.Atoi(postIDStr)
+            if err != nil {
+                http.Error(w, "ID de post invalide", http.StatusBadRequest)
+                return
+            }
+
+            err = CreatePostReport(db, user.ID, postID, reason)
+            if err != nil {
+                http.Error(w, "Erreur lors du signalement", http.StatusInternalServerError)
+                return
+            }
+
+            http.Redirect(w, r, fmt.Sprintf("/post?id=%d", postID), http.StatusSeeOther)
+        }
+    }
+}
+
+func ModeratorDashboardHandler(db *sql.DB) http.HandlerFunc {
+    return func(w http.ResponseWriter, r *http.Request) {
+        user := GetCurrentUser(db, r)
+        
+        if !IsModerator(user) {
+            http.Error(w, "Accès refusé : seuls les modérateurs peuvent accéder à ce tableau de bord", http.StatusForbidden)
+            return
+        }
+
+        if r.Method == "GET" {
+            reports, err := GetPendingReports(db)
+            if err != nil {
+                http.Error(w, "Erreur lors de la récupération des signalements", http.StatusInternalServerError)
+                return
+            }
+
+            tmpl, err := template.ParseFiles("frontend/template/moderation/dashboard.html")
+            if err != nil {
+                http.Error(w, "Erreur lors du chargement du tableau de bord", http.StatusInternalServerError)
+                return
+            }
+
+            tmpl.Execute(w, reports)
+        }
+    }
+}
+
+func ResolveReportHandler(db *sql.DB) http.HandlerFunc {
+    return func(w http.ResponseWriter, r *http.Request) {
+        user := GetCurrentUser(db, r)
+        
+        if !IsAdmin(user) {
+            http.Error(w, "Accès refusé : seuls les administrateurs peuvent résoudre les signalements", http.StatusForbidden)
+            return
+        }
+
+        if r.Method == "POST" {
+            err := r.ParseForm()
+            if err != nil {
+                http.Error(w, "Erreur lors du traitement du formulaire", http.StatusBadRequest)
+                return
+            }
+
+            reportIDStr := r.FormValue("report_id")
+            actionStr := r.FormValue("action")
+            
+            reportID, err := strconv.Atoi(reportIDStr)
+            if err != nil {
+                http.Error(w, "ID de signalement invalide", http.StatusBadRequest)
+                return
+            }
+
+            approve := (actionStr == "approve")
+
+            err = ResolveReport(db, reportID, user.ID, approve)
+            if err != nil {
+                http.Error(w, "Erreur lors du traitement du signalement", http.StatusInternalServerError)
+                return
+            }
+
+            http.Redirect(w, r, "/moderation/dashboard", http.StatusSeeOther)
+        }
+    }
+}
+
+func NotificationHandler(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// Récupérer le token de session
+		cookie, err := r.Cookie("session_token")
+		if err != nil {
+			http.Error(w, "Utilisateur non authentifié", http.StatusUnauthorized)
+			return
+		}
+
+		// Récupérer les infos de l'utilisateur
+		user, err := GetUserInfoByToken(db, cookie.Value)
+		if err != nil {
+			http.Error(w, "Erreur lors de la récupération de l'utilisateur", http.StatusInternalServerError)
+			return
+		}
+
+		// Récupérer les notifications en utilisant la fonction existante GetUserNotifications
+		notifications, err := GetUserNotifications(db, user.ID)
+		if err != nil {
+			http.Error(w, "Erreur lors de la récupération des notifications", http.StatusInternalServerError)
+			return
+		}
+
+		// Passer les notifications à la vue
+		tmpl, err := template.ParseFiles("frontend/template/home/notification/notifications.html")
+		if err != nil {
+			http.Error(w, "Erreur lors du chargement de la page des notifications", http.StatusInternalServerError)
+			return
+		}
+
+		data := struct {
+			User          User
+			Notifications []Notification
+		}{
+			User:          *user,
+			Notifications: notifications,
+		}
+
+		// Exécuter le template
+		tmpl.Execute(w, data)
+	}
+}
+
+
+

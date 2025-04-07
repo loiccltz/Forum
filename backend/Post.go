@@ -3,7 +3,7 @@ package backend
 import (
 	"database/sql"
 	"fmt"
-	"log"
+
 )
 
 type Post struct {
@@ -48,13 +48,13 @@ func AddComment(db *sql.DB, content string, authorID, postID int) error {
     var postAuthorID int
     err = db.QueryRow("SELECT author_id FROM post WHERE id = ?", postID).Scan(&postAuthorID)
     if err != nil {
-        return fmt.Errorf("Erreur lors de la récupération de l'auteur du post: %v", err)
+        return fmt.Errorf("erreur lors de la récupération de l'auteur du post: %v", err)
     }
 
     // Créer une notification pour l'auteur du post
     err = CreateNotification(db, postAuthorID, "Nouveau commentaire sur votre post", postID)
     if err != nil {
-        return fmt.Errorf("Erreur lors de la création de la notification pour le commentaire: %v", err)
+        return fmt.Errorf("erreur lors de la création de la notification pour le commentaire: %v", err)
     }
 
     return nil
