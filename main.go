@@ -43,6 +43,10 @@ func main() {
 	http.Handle("/auth/google", backend.LimitRequest(http.HandlerFunc(backend.GoogleLoginHandler())))
 	http.Handle("/auth/google/callback", backend.LimitRequest(http.HandlerFunc(backend.GoogleCallbackHandler(db))))
 	http.Handle("/profile", backend.LimitRequest(http.HandlerFunc(backend.ProfileHandler(db))))
+	http.Handle("/report_post", backend.LimitRequest(http.HandlerFunc(backend.ReportPostHandler(db))))
+	http.Handle("/moderation/dashboard", backend.LimitRequest(http.HandlerFunc(backend.ModeratorDashboardHandler(db))))
+	http.Handle("/resolve_report", backend.LimitRequest(http.HandlerFunc(backend.ResolveReportHandler(db))))
+	http.Handle("/notification", backend.LimitRequest(http.HandlerFunc(backend.NotificationHandler(db))))
 	// Mise à jour du routage
 	http.HandleFunc("/post/", func(w http.ResponseWriter, r *http.Request) {
 		path := r.URL.Path
@@ -63,6 +67,7 @@ func main() {
 		backend.PostDetailHandler(db)(w, r)
 	})
 
+
 	http.Handle("/uploads/", http.StripPrefix("/uploads/", http.FileServer(http.Dir("uploads"))))
 	http.Handle("/public/", http.StripPrefix("/public/", fs))
 	http.Handle("frontend/public/js", http.StripPrefix("frontend/public/js", fs))
@@ -78,6 +83,9 @@ func main() {
 	fmt.Println("🔹 Ajouter un commentaire : https://localhost/add_comment")
 	fmt.Println("🔹 Like/Dislike un post   : https://localhost/like_dislike")
 	fmt.Println("🔹 Profil utilisateur     : https://localhost/profile")
+	fmt.Println("🔹 Modération             : https://localhost/moderation/dashboard")
+	fmt.Println("🔹 Signaler un post       : https://localhost/report_post")
+	fmt.Println("🔹 notifications          : https://localhost/notification")
 
 	log.Println("✅ Serveur HTTPS actif : https://localhost")
 	backend.StartSecureServer(http.DefaultServeMux)

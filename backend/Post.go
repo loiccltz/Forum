@@ -3,6 +3,7 @@ package backend
 import (
 	"database/sql"
 	"fmt"
+	"log"
 )
 
 type Post struct {
@@ -12,6 +13,7 @@ type Post struct {
 	ImageURL string
 	AuthorID int
 }
+
 
 func GetPostByID(db *sql.DB, postID int) (*Post, error) {
     var post Post
@@ -31,16 +33,31 @@ func CreatePost(db *sql.DB, title, content, imageURL string, authorID int) error
 	}
 	fmt.Println("✅ Post créé avec succès :", title)
 	return nil
+
 }
 
 func AddComment(db *sql.DB, content string, authorID, postID int) error {
-	_, err := db.Exec("INSERT INTO comment (content, author_id, post_id) VALUES (?, ?, ?)", content, authorID, postID)
-	if err != nil {
-		fmt.Println("Erreur lors de l'ajout du commentaire :", err)
-		return err
-	}
-	fmt.Println("✅ Commentaire ajouté avec succès.")
-	return nil
+    _, err := db.Exec("INSERT INTO comment (content, author_id, post_id) VALUES (?, ?, ?)", content, authorID, postID)
+    if err != nil {
+        fmt.Println("Erreur lors de l'ajout du commentaire :", err)
+        return err
+    }
+    fmt.Println("✅ Commentaire ajouté avec succès.")
+
+    // Récupérer l'auteur du post pour lui envoyer une notification
+    var postAuthorID int
+    err = db.QueryRow("SELECT author_id FROM post WHERE id = ?", postID).Scan(&postAuthorID)
+    if err != nil {
+        return fmt.Errorf("Erreur lors de la récupération de l'auteur du post: %v", err)
+    }
+
+    // Créer une notification pour l'auteur du post
+    err = CreateNotification(db, postAuthorID, "Nouveau commentaire sur votre post", postID)
+    if err != nil {
+        return fmt.Errorf("Erreur lors de la création de la notification pour le commentaire: %v", err)
+    }
+
+    return nil
 }
 
 func LikePost(db *sql.DB, userID, postID, likeType int) error {
