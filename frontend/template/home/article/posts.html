@@ -1,0 +1,16 @@
+{{ define "posts" }}
+    <div id="artists" class="posts">
+        {{range .}}
+        <div class="post-card">
+          <a href="/post/{{.ID}}">
+            <div class="">
+              <img src="{{.ImageURL}}" alt="Norway" style="width:100%" class="">
+              <div class="">
+                <p><b>{{ .Title }}</b></p>
+              </div>
+            </div>
+          </a>
+        </div>
+        {{end}}
+    </div>
+{{ end }}

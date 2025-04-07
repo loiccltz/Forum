@@ -4,24 +4,13 @@ import (
 	"database/sql"
 	"fmt"
 	backend "forum/backend"
-	"github.com/joho/godotenv"
-	"html/template"
 	"log"
 	"net/http"
 	"os"
+	"strings"
+
+	"github.com/joho/godotenv"
 )
-
-func home(w http.ResponseWriter, r *http.Request) {
-	var fileName = "./frontend/template/home/forum/accueil.html"
-	t, err := template.ParseFiles(fileName)
-	if err != nil {
-		fmt.Println("Erreur pendant le parsing", err)
-		http.Error(w, "Erreur interne", http.StatusInternalServerError)
-		return
-	}
-
-	t.Execute(w, nil)
-}
 
 var db *sql.DB
 
@@ -44,18 +33,35 @@ func main() {
 
 	fs := http.FileServer(http.Dir("./frontend/public/"))
 
-	http.Handle("/", backend.LimitRequest(http.HandlerFunc(home)))
+	http.Handle("/", backend.LimitRequest(http.HandlerFunc(backend.HomeHandler)))
 	http.Handle("/articles", backend.LimitRequest(http.HandlerFunc(backend.ArticlesHandler())))
 	http.Handle("/login", backend.LimitRequest(http.HandlerFunc(backend.LoginHandler(db))))
 	http.Handle("/register", backend.LimitRequest(http.HandlerFunc(backend.RegisterHandler(db))))
-	http.Handle("/add", backend.LimitRequest(http.HandlerFunc(backend.ArticlesaddHandler(db))))
 	http.Handle("/create_post", backend.LimitRequest(http.HandlerFunc(backend.CreatePostHandler(db))))
 	http.Handle("/add_comment", backend.LimitRequest(http.HandlerFunc(backend.AddCommentHandler(db))))
 	http.Handle("/like_dislike", backend.LimitRequest(http.HandlerFunc(backend.LikePostHandler(db))))
 	http.Handle("/auth/google", backend.LimitRequest(http.HandlerFunc(backend.GoogleLoginHandler())))
 	http.Handle("/auth/google/callback", backend.LimitRequest(http.HandlerFunc(backend.GoogleCallbackHandler(db))))
 	http.Handle("/profile", backend.LimitRequest(http.HandlerFunc(backend.ProfileHandler(db))))
-	http.Handle("/upload", backend.LimitRequest(http.HandlerFunc(backend.UploadImage)))
+	// Mise à jour du routage
+	http.HandleFunc("/post/", func(w http.ResponseWriter, r *http.Request) {
+		path := r.URL.Path
+
+		// Route pour les commentaires
+		if strings.HasSuffix(path, "/comment") {
+			backend.AddCommentHandler(db)(w, r)
+			return
+		}
+
+		// Route pour les likes
+		if strings.HasSuffix(path, "/like") {
+			backend.LikePostHandler(db)(w, r)
+			return
+		}
+
+		// Affichage du post
+		backend.PostDetailHandler(db)(w, r)
+	})
 
 	http.Handle("/uploads/", http.StripPrefix("/uploads/", http.FileServer(http.Dir("uploads"))))
 	http.Handle("/public/", http.StripPrefix("/public/", fs))
