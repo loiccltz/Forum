@@ -14,28 +14,26 @@ type Post struct {
 	AuthorID int
 }
 
-func CreatePost(db *sql.DB, title, content, imageURL string, authorID int, categories []int) error {
-    result, err := db.Exec("INSERT INTO post (title, content, image_url, author_id) VALUES (?, ?, ?, ?)", 
-        title, content, imageURL, authorID)
-    if err != nil {
-        return err
-    }
-    
-    postID, _ := result.LastInsertId()
 
-    // Créer une notification pour l'utilisateur auteur du post
-    err = CreateNotification(db, authorID, "Post créé", int(postID))
+func GetPostByID(db *sql.DB, postID int) (*Post, error) {
+    var post Post
+    err := db.QueryRow("SELECT id, title, content, image_url, author_id FROM post WHERE id = ?", postID).Scan(
+        &post.ID, &post.Title, &post.Content, &post.ImageURL, &post.AuthorID)
     if err != nil {
-        return fmt.Errorf("Erreur lors de la création de la notification: %v", err)
+        return nil, err
     }
+    return &post, nil
+}
 
-    for _, catID := range categories {
-        _, err := db.Exec("INSERT INTO post_category VALUES (?, ?)", postID, catID)
-        if err != nil {
-            log.Printf("Erreur d'insertion catégorie : %v", err)
-        }
-    }
-    return nil
+func CreatePost(db *sql.DB, title, content, imageURL string, authorID int) error {
+	_, err := db.Exec("INSERT INTO post (title, content, image_url, author_id) VALUES (?, ?, ?, ?)", title, content, imageURL, authorID)
+	if err != nil {
+		fmt.Println("Erreur lors de la création du post :", err)
+		return err
+	}
+	fmt.Println("✅ Post créé avec succès :", title)
+	return nil
+
 }
 
 func AddComment(db *sql.DB, content string, authorID, postID int) error {
@@ -63,30 +61,33 @@ func AddComment(db *sql.DB, content string, authorID, postID int) error {
 }
 
 func LikePost(db *sql.DB, userID, postID, likeType int) error {
-	_, err := db.Exec(`
-		INSERT INTO like_dislike (user_id, post_id, type)
-		VALUES (?, ?, ?)
-		ON DUPLICATE KEY UPDATE type = VALUES(type);
-	`, userID, postID, likeType)
-	if err != nil {
-		fmt.Println("Erreur lors du like/dislike :", err)
-	}
-	return err
-
-    // Récupérer l'auteur du post
-    var postAuthorID int
-    err = db.QueryRow("SELECT author_id FROM post WHERE id = ?", postID).Scan(&postAuthorID)
+    _, err := db.Exec(`
+        INSERT INTO like_dislike (user_id, post_id, type)
+        VALUES (?, ?, ?)
+        ON DUPLICATE KEY UPDATE type = ?;
+    `, userID, postID, likeType, likeType)
     if err != nil {
-        return fmt.Errorf("Erreur lors de la récupération de l'auteur du post: %v", err)
+        fmt.Println("Erreur lors du like/dislike :", err)
     }
+    return err
+}
 
-    // Créer une notification pour l'auteur du post
-    err = CreateNotification(db, postAuthorID, "Votre post a été aimé", postID)
+func CountLikes(db *sql.DB, postID int) (int, int, error) {
+    var likes, dislikes int
+    
+    // Compter les likes (type = 1 = like)
+    err := db.QueryRow("SELECT COUNT(*) FROM like_dislike WHERE post_id = ? AND type = 1", postID).Scan(&likes)
     if err != nil {
-        return fmt.Errorf("Erreur lors de la création de la notification pour le like: %v", err)
+        return 0, 0, err
     }
-
-    return nil
+    
+    // Compter les dislikes (type = 0 = dislike)
+    err = db.QueryRow("SELECT COUNT(*) FROM like_dislike WHERE post_id = ? AND type = 0", postID).Scan(&dislikes)
+    if err != nil {
+        return 0, 0, err
+    }
+    
+    return likes, dislikes, nil
 }
 
 func GetPosts(db *sql.DB) ([]Post, error) {

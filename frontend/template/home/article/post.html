@@ -1,0 +1,81 @@
+{{define "post"}}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>Tech-Talks - {{.Post.Title}}</title>
+  <link rel="stylesheet" href="/frontend/public/css/accueil.css">
+  <link rel="stylesheet" href="/frontend/public/css/post.css">
+</head>
+
+<body>
+  <header>
+    <div class="banner">
+      <h1>Tech-Talks</h1>
+    </div>
+    <a class="home-button" href="/">
+      <img src="/frontend/public/rsc/home/home.png" alt="accueil" />
+    </a>
+    <button class="forum-button">
+      <img src="/frontend/public/rsc/forum/forum.png" alt="forum" />
+    </button>
+    <a class="profil-button" href="/profile">
+      <img src="/frontend/public/rsc/profil/pp profil sans compte.png" alt="profil" />
+    </a>
+    <button class="à-propos-button">
+      <img src="/frontend/public/rsc/à propos/download-1.png.png" alt="à propos" />
+    </button>
+  </header>
+
+  <div class="main-container">
+    <div class="post-detail">
+      <a href="/" class="back-button">← Retour aux posts</a>
+      <h1>{{.Post.Title}}</h1>
+      {{if .Post.ImageURL}}
+      <div class="post-image">
+        <img src="/{{.Post.ImageURL}}" alt="{{.Post.Title}}" />
+      </div>
+      {{end}}
+      <div class="post-content">
+        {{.Post.Content}}
+      </div>
+      
+      <div class="post-actions">
+        <form method="POST" action="/post/{{.Post.ID}}/like">
+          <input type="hidden" name="post_id_like" value="{{.Post.ID}}">
+          <input type="hidden" name="like_type" value="1">
+          <button type="submit" class="btn like">Like ({{.Likes}})</button>
+        </form>
+        <form method="POST" action="/post/{{.Post.ID}}/like">
+          <input type="hidden" name="post_id_like" value="{{.Post.ID}}">
+          <input type="hidden" name="like_type" value="0">
+          <button type="submit" class="btn dislike">Dislike ({{.Dislikes}})</button>
+        </form>
+      </div>
+      
+      <div class="comments-section">
+        <h2>Commentaires</h2>
+        {{if .Comments}}
+          {{range .Comments}}
+          <div class="comment">
+            <p class="comment-author">{{.Username}}</p>
+            <p class="comment-content">{{.Content}}</p>
+          </div>
+          {{end}}
+        {{else}}
+          <p>Aucun commentaire pour l'instant.</p>
+        {{end}}
+        
+        <div class="add-comment">
+          <h3>Ajouter un commentaire</h3>
+          <form method="POST" action="/post/{{.Post.ID}}/comment">
+            <textarea name="content" rows="4" placeholder="Votre commentaire..." required></textarea>
+            <button type="submit">Envoyer</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+{{end}}

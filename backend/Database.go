@@ -8,19 +8,19 @@ import (
 
 // InitDB initialise la connexion à la base de données MySQL
 func InitDB() (*sql.DB, error) {
-	
-	dsn := "admin:hardpassword@tcp(forum.cjoaea48gf89.eu-north-1.rds.amazonaws.com:3306)/forum"
-	
+
+	dsn := "root:Test@tcp(127.0.0.1:3306)/forum"
+
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
-		return nil, fmt.Errorf("❌ Erreur de connexion à MySQL : %v", err)
+		return nil, fmt.Errorf(" Erreur de connexion à MySQL : %v", err)
 	}
 
 	// Vérifie que la connexion fonctionne
 	err = db.Ping()
 	if err != nil {
 		db.Close()
-		return nil, fmt.Errorf("❌ Impossible de contacter la BDD : %v", err)
+		return nil, fmt.Errorf(" Impossible de contacter la BDD : %v", err)
 	}
 
 	// Exécute la création des tables séparément
@@ -36,7 +36,7 @@ func InitDB() (*sql.DB, error) {
 	`)
 	if err != nil {
 		db.Close()
-		return nil, fmt.Errorf("❌ Erreur lors de la création de la table user : %v", err)
+		return nil, fmt.Errorf(" Erreur lors de la création de la table user : %v", err)
 	}
 
 	_, err = db.Exec(`
@@ -44,13 +44,14 @@ func InitDB() (*sql.DB, error) {
 			id INT AUTO_INCREMENT PRIMARY KEY,
 			title VARCHAR(255) NOT NULL,
 			content TEXT NOT NULL,
-			image VARCHAR(255) NOT NULL,
+			image_url VARCHAR(255) NOT NULL,
 			author_id INT NOT NULL,
 			FOREIGN KEY (author_id) REFERENCES user(id) ON DELETE CASCADE
 		);
 	`)
 	if err != nil {
 		db.Close()
+
 		return nil, fmt.Errorf("❌ Erreur lors de la création de la table post : %v", err)
 	}
 
@@ -92,32 +93,6 @@ func InitDB() (*sql.DB, error) {
 		db.Close()
 		return nil, fmt.Errorf("❌ Erreur lors de la création de la table notification : %v", err)
 	}
-    
-	_, err = db.Exec(`
-    	CREATE TABLE IF NOT EXISTS comment (
-        	id INT AUTO_INCREMENT PRIMARY KEY,
-        	content TEXT NOT NULL,
-        	author_id INT NOT NULL,
-        	post_id INT NOT NULL,
-        	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    	);
-	`)
-		if err != nil {
-		db.Close()
-		return nil, fmt.Errorf("❌ Erreur lors de la création de la table comment : %v", err)
-	}
-	_, err = db.Exec(`
-    	CREATE TABLE IF NOT EXISTS like_dislike (
-        	user_id INT,
-        	post_id INT,
-        	type INT CHECK(type IN (0, 1)),
-        	PRIMARY KEY (user_id, post_id)
-    	);
-	`)
-	if err != nil {
-		db.Close()
-		return nil, fmt.Errorf("❌ Erreur lors de la création de la table like_dislike : %v", err)
-	}
 
 	_, err = db.Exec(`
 	CREATE TABLE IF NOT EXISTS post_reports (
@@ -139,6 +114,36 @@ func InitDB() (*sql.DB, error) {
 	if err != nil {
 	db.Close()
 	return nil, fmt.Errorf("❌ Erreur lors de la création de la table post_reports : %v", err)
+
+	_, err = db.Exec(`
+    CREATE TABLE IF NOT EXISTS comment (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        content TEXT NOT NULL,
+        author_id INT NOT NULL,
+        post_id INT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (author_id) REFERENCES user(id) ON DELETE CASCADE,
+        FOREIGN KEY (post_id) REFERENCES post(id) ON DELETE CASCADE
+    );
+`)
+	if err != nil {
+		db.Close()
+		return nil, fmt.Errorf(" Erreur lors de la création de la table comment : %v", err)
+	}
+
+	_, err = db.Exec(`
+    CREATE TABLE IF NOT EXISTS like_dislike (
+        user_id INT NOT NULL,
+        post_id INT NOT NULL,
+        type INT NOT NULL, -- 0 pour dislike, 1 pour like
+        PRIMARY KEY (user_id, post_id),
+        FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE,
+        FOREIGN KEY (post_id) REFERENCES post(id) ON DELETE CASCADE
+    );
+`)
+	if err != nil {
+		db.Close()
+		return nil, fmt.Errorf(" Erreur lors de la création de la table like_dislike : %v", err)
 	}
 
 	fmt.Println("✅ Connexion à MySQL réussie et tables créées !")
