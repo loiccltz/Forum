@@ -1,44 +1,47 @@
 {{define "accueil"}}
 <!DOCTYPE html>
 <html lang="fr">
-
 <head>
   <meta charset="utf-8">
   <title>Tech-Talks</title>
   <link rel="stylesheet" href="../../../public/css/accueil.css">
   <link rel="stylesheet" href="../../../public/css/article.css">
 </head>
-
 <body>
   <header>
+    
     <div class="banner">
       <h1>Tech-Talks</h1>
     </div>
-    <button class="home-button" href="/">
-      <img src="/frontend/public/rsc/home/home.png" alt="accueil" />
-    </button>
-    <button class="forum-button">
-      <img src="/frontend/public/rsc/forum/forum.png" alt="forum" />
-    </button>
-    <a class="profil-button" href="/profile">
-      <img src="../../../public/rsc/profil/pp profil sans compte.png" alt="profil" />
+    <a class="home-button"  href="/frontend/template/home/forum/accueil.html">
+      <img src="/frontend/public/rsc/home/home.png" alt="Accueil">
     </a>
-    <button class="à-propos-button">
-      <img src="/frontend/public/rsc/à propos/download-1.png.png" alt="à propos" href="/à-propos" />
-    </button>
+    <a class="profil-button" href="/frontend/template/home/profile/profil.html">
+      <img src="/frontend/public/rsc/profil/pp profil sans compte-1.png" alt="Profil">
+    </a>
+    <a class="à-propos-button" href="/frontend/template/home/secondary/about.html">
+      <img src="/frontend/public/rsc/à propos/download-1.png.png" alt="À propos">
+    </a>
   </header>
+  
 
   <div class="main-container">
     <aside class="sidebar">
       <h2>Filtrer les catégories</h2>
       <button for="filter-name"> <a href="/create_post">Créer un Post</a></button>
       <form method="GET" action="/">
-        <label for="filter-name">Nom</label>
-        <input type="text" id="filter-name" name="query" class="sidebar-input" placeholder="Rechercher une catégorie" />
+        <label for="filter-name">Nom de la catégorie</label>
+        <input 
+          type="text" 
+          id="filter-name" 
+          name="query" 
+          class="sidebar-input" 
+          placeholder="Rechercher une catégorie" />
         <button type="submit" class="sidebar-button">Rechercher</button>
-        <label for="filter-componant">Composants</label>
-        <select id="filter-componant" name="year" class="sidebar-input">
-          <option value="">Tout les composants</option>
+
+        <label for="filter-composant">Composants</label>
+        <select id="filter-composant" name="composants" class="sidebar-input">
+          <option value="">Tous les composants</option>
           <option value="Carte Mère">Carte Mère</option>
           <option value="Carte Graphique">Carte Graphique</option>
           <option value="Processeur">Processeur</option>
@@ -47,7 +50,7 @@
           <option value="Stockage">Stockage</option>
           <option value="Alimentation">Alimentation</option>
           <option value="Refroidissement">Refroidissement</option>
-          <option value="accessoires">Accessoires</option>
+          <option value="Accessoires">Accessoires</option>
         </select>
 
         <label for="filter-brand">Marque</label>
@@ -62,7 +65,7 @@
           <option value="Samsung">Samsung</option>
           <option value="Corsair">Corsair</option>
         </select>
-      </form>
+      </form>      
     </aside>
     {{template "posts" .Posts}}
   </div>
