@@ -39,6 +39,12 @@ func InitDB() (*sql.DB, error) {
 		return nil, fmt.Errorf(" Erreur lors de la création de la table user : %v", err)
 	}
 
+	err = AddDefaultCategories(db)
+	if err != nil {
+		db.Close()
+		return nil, fmt.Errorf("❌ Erreur lors de l'ajout des catégories par défaut : %v", err)
+	}
+
 	_, err = db.Exec(`
 		CREATE TABLE IF NOT EXISTS post (
 			id INT AUTO_INCREMENT PRIMARY KEY,
@@ -61,7 +67,7 @@ func InitDB() (*sql.DB, error) {
         	name VARCHAR(255) NOT NULL UNIQUE
     	);
 	`)
-		if err != nil {
+	if err != nil {
 		db.Close()
 		return nil, fmt.Errorf("❌ Erreur lors de la création de la table category : %v", err)
 	}
@@ -89,7 +95,7 @@ func InitDB() (*sql.DB, error) {
         	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     	);
 	`)
-		if err != nil {
+	if err != nil {
 		db.Close()
 		return nil, fmt.Errorf("❌ Erreur lors de la création de la table notification : %v", err)
 	}
@@ -127,8 +133,8 @@ func InitDB() (*sql.DB, error) {
 	);
 	`)
 	if err != nil {
-	db.Close()
-	return nil, fmt.Errorf("❌ Erreur lors de la création de la table post_reports : %v", err)
+		db.Close()
+		return nil, fmt.Errorf("❌ Erreur lors de la création de la table post_reports : %v", err)
 	}
 
 	_, err = db.Exec(`
@@ -149,4 +155,3 @@ func InitDB() (*sql.DB, error) {
 	fmt.Println("✅ Connexion à MySQL réussie et tables créées !")
 	return db, nil
 }
-

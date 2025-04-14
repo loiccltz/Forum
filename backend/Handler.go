@@ -15,41 +15,50 @@ import (
 )
 
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
-	db, err := InitDB()
-	if err != nil {
-		http.Error(w, "Database connection error", http.StatusInternalServerError)
-		return
-	}
-	defer db.Close()
+    db, err := InitDB()
+    if err != nil {
+        http.Error(w, "Database connection error", http.StatusInternalServerError)
+        return
+    }
+    defer db.Close()
 
-	// recup les posts
-	posts, err := GetPosts(db)
-	if err != nil {
-		http.Error(w, "Error fetching posts", http.StatusInternalServerError)
-		return
-	}
+    // recup les posts
+    posts, err := GetPosts(db)
+    if err != nil {
+        http.Error(w, "Error fetching posts", http.StatusInternalServerError)
+        return
+    }
 
-	// il faut parser les templates
-	tmpl, err := template.ParseFiles(
-		"./frontend/template/home/forum/accueil.html", 
-		"./frontend/template/home/article/posts.html",
-	)
-	if err != nil {
-		log.Printf("Template parsing error: %v", err)
-		http.Error(w, "Template error", http.StatusInternalServerError)
-		return
-	}
+    // recup toutes les catégories (pour éventuellement filtrer)
+    categories, err := GetCategories(db)
+    if err != nil {
+        http.Error(w, "Error fetching categories", http.StatusInternalServerError)
+        return
+    }
 
-	// on donne les données des posts a la template
-	err = tmpl.ExecuteTemplate(w, "accueil", struct {
-		Posts []Post
-	}{
-		Posts: posts,
-	})
-	if err != nil {
-		log.Printf("Template execution error: %v", err)
-		http.Error(w, "Rendering error", http.StatusInternalServerError)
-	}
+    // il faut parser les templates
+    tmpl, err := template.ParseFiles(
+        "./frontend/template/home/forum/accueil.html", 
+        "./frontend/template/home/article/posts.html",
+    )
+    if err != nil {
+        log.Printf("Template parsing error: %v", err)
+        http.Error(w, "Template error", http.StatusInternalServerError)
+        return
+    }
+
+    // on donne les données des posts a la template
+    err = tmpl.ExecuteTemplate(w, "accueil", struct {
+        Posts      []Post
+        Categories []Category
+    }{
+        Posts:      posts,
+        Categories: categories,
+    })
+    if err != nil {
+        log.Printf("Template execution error: %v", err)
+        http.Error(w, "Rendering error", http.StatusInternalServerError)
+    }
 }
 
 func RegisterHandler(db *sql.DB) http.HandlerFunc {
@@ -106,80 +115,104 @@ func ArticlesHandler() http.HandlerFunc {
 }
 
 func CreatePostHandler(db *sql.DB) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+    return func(w http.ResponseWriter, r *http.Request) {
+        fmt.Println("Fonction CreatePost appelée")
+        if !IsAuthenticated(r) {
+            http.Error(w, "Vous devez être connecté pour créer un post", http.StatusUnauthorized)
+            return
+        }
 
-		fmt.Println("Fonction CreatePost appelée")
-		if !IsAuthenticated(r) {
-			http.Error(w, "Vous devez être connecté pour créer un post", http.StatusUnauthorized)
-			return
-		}
+        if r.Method == "GET" {
+            fmt.Println("GET")
+            
+            // Récupérer toutes les catégories pour le formulaire
+            categories, err := GetCategories(db)
+            if err != nil {
+                http.Error(w, "Erreur lors de la récupération des catégories", http.StatusInternalServerError)
+                return
+            }
+            
+            tmpl, err := template.ParseFiles("frontend/template/home/article/add.html")
+            if err != nil {
+                http.Error(w, "Erreur lors du chargement du formulaire", http.StatusInternalServerError)
+                fmt.Println("Erreur template :", err)
+                return
+            }
+            
+            // Passer les catégories au template
+            tmpl.Execute(w, struct {
+                Categories []Category
+            }{
+                Categories: categories,
+            })
+        }
 
-		if r.Method == "GET" {
-			fmt.Println("GET")
-			tmpl, err := template.ParseFiles("frontend/template/home/article/add.html")
-			if err != nil {
-				http.Error(w, "Erreur lors du chargement du formulaire", http.StatusInternalServerError)
-				fmt.Println("Erreur template :", err)
-				return
-			}
-			tmpl.Execute(w, nil)
-		}
+        if r.Method == http.MethodPost {
+            fmt.Println(" POST")
+            err := r.ParseMultipartForm(20 << 20) // Limite a 20MB
+            if err != nil {
+                http.Error(w, "Erreur lors du traitement du formulaire", http.StatusBadRequest)
+                return
+            }
 
-		if r.Method == http.MethodPost {
-			fmt.Println(" POST")
-			err := r.ParseMultipartForm(20 << 20) // Limite a 20MB
-			if err != nil {
-				http.Error(w, "Erreur lors du traitement du formulaire", http.StatusBadRequest)
-				return
-			}
+            title := r.FormValue("title")
+            content := r.FormValue("content")
+            sessionToken, _ := GetSessionToken(r)
+            
+            // Récupérer les catégories sélectionnées
+            categoryIDs := []int{}
+            for _, categoryIDStr := range r.Form["categories"] {
+                categoryID, err := strconv.Atoi(categoryIDStr)
+                if err != nil {
+                    http.Error(w, "ID de catégorie invalide", http.StatusBadRequest)
+                    return
+                }
+                categoryIDs = append(categoryIDs, categoryID)
+            }
 
-			title := r.FormValue("title")
-			content := r.FormValue("content")
-			sessionToken, _ := GetSessionToken(r)
+            file, handler, err := r.FormFile("image")
+            if err != nil {
+                http.Error(w, "Erreur lors de l'upload de l'image", http.StatusBadRequest)
+                return
+            }
+            defer file.Close()
 
-			file, handler, err := r.FormFile("image")
-			if err != nil {
-				http.Error(w, "Erreur lors de l'upload de l'image", http.StatusBadRequest)
-				return
-			}
-			defer file.Close()
+            // il faut changer le chemin
+            uploadDir := "uploads/"
+            if _, err := os.Stat(uploadDir); os.IsNotExist(err) {
+                os.Mkdir(uploadDir, os.ModePerm)
+            }
 
-			// il faut changer le chemin
-			uploadDir := "uploads/"
-			if _, err := os.Stat(uploadDir); os.IsNotExist(err) {
-				os.Mkdir(uploadDir, os.ModePerm)
-			}
+            imagePath := filepath.Join(uploadDir, handler.Filename)
 
-			imagePath := filepath.Join(uploadDir, handler.Filename)
+            // save l'image
+            dst, err := os.Create(imagePath)
+            if err != nil {
+                http.Error(w, "Erreur lors de la sauvegarde de l'image", http.StatusInternalServerError)
+                return
+            }
+            defer dst.Close()
+            io.Copy(dst, file)
 
-			// save l'image
-			dst, err := os.Create(imagePath)
-			if err != nil {
-				http.Error(w, "Erreur lors de la sauvegarde de l'image", http.StatusInternalServerError)
-				return
-			}
-			defer dst.Close()
-			io.Copy(dst, file)
+            // recup id de l'utilisateur
+            var userID int
+            err = db.QueryRow("SELECT id FROM user WHERE session_token = ?", sessionToken).Scan(&userID)
+            if err != nil {
+                http.Error(w, "Utilisateur non trouvé", http.StatusUnauthorized)
+                return
+            }
 
-			// recup id de l'utilisateur
-			var userID int
-			err = db.QueryRow("SELECT id FROM user WHERE session_token = ?", sessionToken).Scan(&userID)
-			if err != nil {
-				http.Error(w, "Utilisateur non trouvé", http.StatusUnauthorized)
-				return
-			}
+            // Créer le post avec les catégories
+            postID, err := CreatePost(db, title, content, imagePath, userID, categoryIDs)
+            if err != nil {
+                http.Error(w, "Erreur lors de la création du post", http.StatusInternalServerError)
+                return
+            }
 
-			err = CreatePost(db, title, content, imagePath, userID)
-			if err != nil {
-				http.Error(w, "Erreur lors de la création du post", http.StatusInternalServerError)
-				return
-			}
-
-		
-			http.Redirect(w, r, "/", http.StatusSeeOther)
-			return
-		}
-	}
+            http.Redirect(w, r, fmt.Sprintf("/post/%d", postID), http.StatusSeeOther)
+            return
+        }
+    }
 }
 
 
@@ -236,6 +269,64 @@ func PostDetailHandler(db *sql.DB) http.HandlerFunc {
             Comments: comments,
             Likes:    likes,
             Dislikes: dislikes,
+        })
+        if err != nil {
+            http.Error(w, "Erreur lors du rendu du template", http.StatusInternalServerError)
+        }
+    }
+}
+
+
+func PostsByCategoryHandler(db *sql.DB) http.HandlerFunc {
+    return func(w http.ResponseWriter, r *http.Request) {
+        categoryIDStr := r.URL.Query().Get("category_id")
+        categoryID, err := strconv.Atoi(categoryIDStr)
+        if err != nil {
+            http.Error(w, "ID de catégorie invalide", http.StatusBadRequest)
+            return
+        }
+
+        // Fonction à implémenter dans Post.go
+        posts, err := GetPostsByCategory(db, categoryID) 
+        if err != nil {
+            http.Error(w, "Erreur lors de la récupération des posts", http.StatusInternalServerError)
+            return
+        }
+
+        categories, err := GetCategories(db)
+        if err != nil {
+            http.Error(w, "Erreur lors de la récupération des catégories", http.StatusInternalServerError)
+            return
+        }
+
+        // Récupérer le nom de la catégorie sélectionnée
+        var categoryName string
+        for _, cat := range categories {
+            if cat.ID == categoryID {
+                categoryName = cat.Name
+                break
+            }
+        }
+
+        tmpl, err := template.ParseFiles(
+            "./frontend/template/home/forum/accueil.html", 
+            "./frontend/template/home/article/posts.html",
+        )
+        if err != nil {
+            http.Error(w, "Erreur lors du chargement du template", http.StatusInternalServerError)
+            return
+        }
+
+        err = tmpl.ExecuteTemplate(w, "accueil", struct {
+            Posts          []Post
+            Categories     []Category
+            SelectedCategory int
+            CategoryName   string
+        }{
+            Posts:          posts,
+            Categories:     categories,
+            SelectedCategory: categoryID,
+            CategoryName:   categoryName,
         })
         if err != nil {
             http.Error(w, "Erreur lors du rendu du template", http.StatusInternalServerError)
