@@ -37,7 +37,7 @@
         <span>Catégories: </span>
         {{if .Post.Categories}}
           {{range $index, $category := .Post.Categories}}
-            <a href="/?category_id={{$category.ID}}" class="category-tag">{{$category.Name}}</a>{{if not (last $index $.Post.Categories)}}, {{end}}
+            <a href="/?category_id={{$category.ID}}" class="category-tag">{{$category.Name}}</a>
           {{end}}
         {{else}}
           <span>Aucune catégorie</span>
