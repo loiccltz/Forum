@@ -217,63 +217,79 @@ func CreatePostHandler(db *sql.DB) http.HandlerFunc {
 
 
 func PostDetailHandler(db *sql.DB) http.HandlerFunc {
-    return func(w http.ResponseWriter, r *http.Request) {
-        // Extraire l'ID du post de l'URL
-        postIDStr := r.URL.Path[len("/post/"):]
-        postID, err := strconv.Atoi(postIDStr)
-        if err != nil {
-            http.Error(w, "ID de post invalide", http.StatusBadRequest)
-            return
+	return func(w http.ResponseWriter, r *http.Request) {
+		// ... (existing code to get postID, post, comments, likes) ...
+		postIDStr := strings.TrimPrefix(r.URL.Path, "/post/")
+        // Handle potential trailing slashes or extra path segments if needed
+        pathParts := strings.Split(postIDStr, "/")
+        if len(pathParts) > 0 {
+            postIDStr = pathParts[0]
+        } else {
+             http.Error(w, "Invalid post URL", http.StatusBadRequest)
+             return
         }
 
-        // recup les details du post
-        post, err := GetPostByID(db, postID)
-        if err != nil {
-            if err == sql.ErrNoRows {
-                http.Error(w, "Post non trouvé", http.StatusNotFound)
-            } else {
-                http.Error(w, "Erreur lors de la récupération du post", http.StatusInternalServerError)
-            }
-            return
-        }
+		postID, err := strconv.Atoi(postIDStr)
+		if err != nil {
+			http.Error(w, "ID de post invalide", http.StatusBadRequest)
+			return
+		}
 
-        // recup les commentaires lié au post
-        comments, err := GetCommentsByPostID(db, postID)
-        if err != nil {
-            http.Error(w, "Erreur lors de la récupération des commentaires", http.StatusInternalServerError)
-            return
-        }
-        
-        // Récupérer le nombre de likes et dislikes
-        likes, dislikes, err := CountLikes(db, postID)
-        if err != nil {
-            http.Error(w, "Erreur lors de la récupération des likes", http.StatusInternalServerError)
-            return
-        }
+		// recup les details du post
+		post, err := GetPostByID(db, postID)
+		if err != nil {
+			if err == sql.ErrNoRows {
+				http.Error(w, "Post non trouvé", http.StatusNotFound)
+			} else {
+				http.Error(w, "Erreur lors de la récupération du post", http.StatusInternalServerError)
+			}
+			return
+		}
 
-        // Charger le template
-        tmpl, err := template.ParseFiles("./frontend/template/home/article/post.html")
-        if err != nil {
-            http.Error(w, "Erreur lors du chargement du template", http.StatusInternalServerError)
-            return
-        }
+		// recup les commentaires lié au post
+		comments, err := GetCommentsByPostID(db, postID)
+		if err != nil {
+			http.Error(w, "Erreur lors de la récupération des commentaires", http.StatusInternalServerError)
+			return
+		}
 
-        // passer les données a la template
-        err = tmpl.ExecuteTemplate(w, "post", struct {
-            Post     *Post
-            Comments []Comment
-            Likes    int
-            Dislikes int
-        }{
-            Post:     post,
-            Comments: comments,
-            Likes:    likes,
-            Dislikes: dislikes,
-        })
-        if err != nil {
-            http.Error(w, "Erreur lors du rendu du template", http.StatusInternalServerError)
-        }
-    }
+		// Récupérer le nombre de likes et dislikes
+		likes, dislikes, err := CountLikes(db, postID)
+		if err != nil {
+			http.Error(w, "Erreur lors de la récupération des likes", http.StatusInternalServerError)
+			return
+		}
+
+		// Get current user ID
+		currentUserID := getCurrentUserID(r, db) // <-- Add this
+
+		// Charger le template
+		tmpl, err := template.ParseFiles("./frontend/template/home/article/post.html")
+		if err != nil {
+			log.Printf("Template parsing error: %v", err)
+			http.Error(w, "Erreur lors du chargement du template", http.StatusInternalServerError)
+			return
+		}
+
+		// passer les données a la template
+		err = tmpl.ExecuteTemplate(w, "post", struct {
+			Post          *Post
+			Comments      []Comment
+			Likes         int
+			Dislikes      int
+			CurrentUserID int // <-- Pass this to template
+		}{
+			Post:          post,
+			Comments:      comments,
+			Likes:         likes,
+			Dislikes:      dislikes,
+			CurrentUserID: currentUserID, // <-- Add this
+		})
+		if err != nil {
+            log.Printf("Template execution error: %v", err)
+			http.Error(w, "Erreur lors du rendu du template", http.StatusInternalServerError)
+		}
+	}
 }
 
 
@@ -809,11 +825,274 @@ func NotificationHandler(db *sql.DB) http.HandlerFunc {
 			User:          *user,
 			Notifications: notifications,
 		}
-
-		// Exécuter le template
 		tmpl.Execute(w, data)
 	}
 }
+
+// affiche le formulaire d'édition
+func ShowEditPostFormHandler(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if !IsAuthenticated(r) {
+			http.Redirect(w, r, "/login", http.StatusSeeOther)
+			return
+		}
+		currentUserID := getCurrentUserID(r, db)
+        // si currentuser = 0 alors l'user n'est pas authentifié
+		if currentUserID == 0 {
+			http.Error(w, "Utilisateur non trouvé", http.StatusUnauthorized)
+			return
+		}
+		pathParts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
+		if len(pathParts) < 3 || pathParts[2] != "edit" {
+			http.Error(w, "URL invalide pour éditer le post", http.StatusBadRequest)
+			return
+		}
+		postID, err := strconv.Atoi(pathParts[1])
+		if err != nil {
+			http.Error(w, "ID de post invalide", http.StatusBadRequest)
+			return
+		}
+
+		post, err := GetPostByID(db, postID)
+		if err != nil {
+			if err == sql.ErrNoRows {
+				http.Error(w, "Post non trouvé", http.StatusNotFound)
+			} else {
+				http.Error(w, "Erreur lors de la récupération du post", http.StatusInternalServerError)
+			}
+			return
+		}
+
+		// verifier si c'est le bon user
+		if post.AuthorID != currentUserID {
+			http.Error(w, "Vous n'êtes pas autorisé à éditer ce post", http.StatusForbidden)
+			return
+		}
+		tmpl, err := template.ParseFiles("./frontend/template/home/article/edit_post.html") // Create this file
+		if err != nil {
+			log.Printf("Template parsing error (edit_post.html): %v", err)
+			http.Error(w, "Erreur lors du chargement du formulaire d'édition", http.StatusInternalServerError)
+			return
+		}
+
+		// envoyé les données a la template
+		err = tmpl.Execute(w, post)
+		if err != nil {
+			log.Printf("Template execution error (edit_post.html): %v", err)
+			http.Error(w, "Erreur lors de l'affichage du formulaire d'édition", http.StatusInternalServerError)
+		}
+	}
+}
+
+// gere les données du formulaire d'edition
+func HandleEditPostHandler(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			http.Error(w, "Méthode non autorisée", http.StatusMethodNotAllowed)
+			return
+		}
+		if !IsAuthenticated(r) {
+			http.Error(w, "Vous devez être connecté pour éditer un post", http.StatusUnauthorized)
+			return
+		}
+		currentUserID := getCurrentUserID(r, db)
+		if currentUserID == 0 {
+			http.Error(w, "Utilisateur non trouvé", http.StatusUnauthorized)
+			return
+		}
+		pathParts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
+         if len(pathParts) < 3 || pathParts[2] != "edit" {
+			http.Error(w, "URL invalide pour éditer le post", http.StatusBadRequest)
+			return
+		}
+		postID, err := strconv.Atoi(pathParts[1])
+		if err != nil {
+			http.Error(w, "ID de post invalide", http.StatusBadRequest)
+			return
+		}
+
+		err = r.ParseForm()
+		if err != nil {
+			http.Error(w, "Erreur lors du traitement du formulaire", http.StatusBadRequest)
+			return
+		}
+		title := r.FormValue("title")
+		content := r.FormValue("content")
+
+		if title == "" || content == "" {
+			http.Error(w, "Le titre et le contenu sont requis", http.StatusBadRequest)
+			return
+		}
+
+		// mise a jour d'un post
+		err = UpdatePost(db, postID, currentUserID, title, content)
+		if err != nil {
+			if err.Error() == "user not authorized to edit this post" {
+				http.Error(w, "Vous n'etes pas autorise a éditer ce post", http.StatusForbidden)
+			} else if err.Error() == "post not found" {
+				http.Error(w, "Post non trouvé", http.StatusNotFound)
+			} else {
+				http.Error(w, "Erreur lors de la mise à jour du post: "+err.Error(), http.StatusInternalServerError)
+			}
+			return
+		}
+
+		http.Redirect(w, r, fmt.Sprintf("/post/%d", postID), http.StatusSeeOther)
+	}
+}
+
+// gere la suppression d'un post
+func DeletePostHandler(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// verifier si la methode est bien post
+		if r.Method != http.MethodPost {
+			http.Error(w, "Méthode non autorisée (POST requis)", http.StatusMethodNotAllowed)
+            w.Header().Set("Content-Type", "application/json")
+            w.WriteHeader(http.StatusMethodNotAllowed)
+            fmt.Fprintln(w, `{"success": false, "message": "Method Not Allowed (Use POST)"}`)
+			return
+		}
+		if !IsAuthenticated(r) {
+			http.Error(w, "Vous devez être connecté pour supprimer un post", http.StatusUnauthorized)
+            w.Header().Set("Content-Type", "application/json")
+            w.WriteHeader(http.StatusUnauthorized)
+            fmt.Fprintln(w, `{"success": false, "message": "Unauthorized"}`)
+			return
+		}
+		currentUserID := getCurrentUserID(r, db)
+		if currentUserID == 0 {
+			http.Error(w, "Utilisateur non trouvé", http.StatusUnauthorized)
+            w.Header().Set("Content-Type", "application/json")
+            w.WriteHeader(http.StatusUnauthorized)
+            fmt.Fprintln(w, `{"success": false, "message": "User not found"}`)
+			return
+		}
+
+		// recup l'id du post dans l'url pour pouvoir le supprimer
+		pathParts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
+        if len(pathParts) < 3 || pathParts[2] != "delete" {
+			http.Error(w, "URL invalide pour supprimer le post", http.StatusBadRequest)
+            w.Header().Set("Content-Type", "application/json")
+            w.WriteHeader(http.StatusBadRequest)
+            fmt.Fprintln(w, `{"success": false, "message": "Invalid URL for delete"}`)
+			return
+		}
+		postID, err := strconv.Atoi(pathParts[1])
+		if err != nil {
+			http.Error(w, "ID de post invalide", http.StatusBadRequest)
+            w.Header().Set("Content-Type", "application/json")
+            w.WriteHeader(http.StatusBadRequest)
+            fmt.Fprintln(w, `{"success": false, "message": "Invalid Post ID"}`)
+			return
+		}
+
+		err = DeletePost(db, postID, currentUserID)
+		if err != nil {
+            errorMessage := "Erreur lors de la suppression du post: " + err.Error()
+            statusCode := http.StatusInternalServerError
+			if err.Error() == "user not authorized to delete this post" {
+                errorMessage = "Vous n'êtes pas autorisé à supprimer ce post"
+				statusCode = http.StatusForbidden
+			} else if err.Error() == "post not found" {
+                errorMessage = "Post non trouvé"
+				statusCode = http.StatusNotFound
+			}
+			http.Error(w, errorMessage, statusCode)
+            // envoyer du json pour le AJAX
+            w.Header().Set("Content-Type", "application/json")
+            w.WriteHeader(statusCode)
+            fmt.Fprintf(w, `{"success": false, "message": "%s"}`, errorMessage)
+			return
+		}
+
+        w.Header().Set("Content-Type", "application/json")
+        w.WriteHeader(http.StatusOK)
+        fmt.Fprintln(w, `{"success": true, "message": "Post deleted successfully"}`)
+	}
+}
+
+
+// gerer la suppresion de commentaire
+func DeleteCommentHandler(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			http.Error(w, "Méthode non autorisée (POST requis)", http.StatusMethodNotAllowed)
+            w.Header().Set("Content-Type", "application/json")
+            w.WriteHeader(http.StatusMethodNotAllowed)
+            fmt.Fprintln(w, `{"success": false, "message": "Method Not Allowed (Use POST)"}`)
+			return
+		}
+		if !IsAuthenticated(r) {
+			http.Error(w, "Vous devez être connecté pour supprimer un commentaire", http.StatusUnauthorized)
+            w.Header().Set("Content-Type", "application/json")
+            w.WriteHeader(http.StatusUnauthorized)
+            fmt.Fprintln(w, `{"success": false, "message": "Unauthorized"}`)
+			return
+		}
+		currentUserID := getCurrentUserID(r, db)
+		if currentUserID == 0 {
+			http.Error(w, "Utilisateur non trouvé", http.StatusUnauthorized)
+            w.Header().Set("Content-Type", "application/json")
+            w.WriteHeader(http.StatusUnauthorized)
+            fmt.Fprintln(w, `{"success": false, "message": "User not found"}`)
+			return
+		}
+
+		// recupere l'id du commentaire depuis l'URL
+		pathParts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
+		if len(pathParts) < 3 || pathParts[2] != "delete" {
+			http.Error(w, "URL invalide pour supprimer le commentaire", http.StatusBadRequest)
+            w.Header().Set("Content-Type", "application/json")
+            w.WriteHeader(http.StatusBadRequest)
+            fmt.Fprintln(w, `{"success": false, "message": "Invalid URL for delete"}`)
+			return
+		}
+		commentID, err := strconv.Atoi(pathParts[1])
+		if err != nil {
+			http.Error(w, "ID de commentaire invalide", http.StatusBadRequest)
+            w.Header().Set("Content-Type", "application/json")
+            w.WriteHeader(http.StatusBadRequest)
+            fmt.Fprintln(w, `{"success": false, "message": "Invalid Comment ID"}`)
+			return
+		}
+
+
+		// supprimer un commentaire
+		err = DeleteComment(db, commentID, currentUserID)
+		if err != nil {
+            errorMessage := "Erreur lors de la suppression du commentaire: " + err.Error()
+            statusCode := http.StatusInternalServerError
+			if err.Error() == "user not authorized to delete this comment" {
+                errorMessage = "Vous n'etes pas autorise a supprimer ce commentaire"
+				statusCode = http.StatusForbidden
+			} else if err.Error() == "comment not found" {
+                errorMessage = "Commentaire non trouvé"
+				statusCode = http.StatusNotFound
+			}
+			http.Error(w, errorMessage, statusCode)
+            w.Header().Set("Content-Type", "application/json")
+            w.WriteHeader(statusCode)
+            fmt.Fprintf(w, `{"success": false, "message": "%s"}`, errorMessage)
+			return
+		}
+
+        w.Header().Set("Content-Type", "application/json")
+        w.WriteHeader(http.StatusOK)
+        fmt.Fprintln(w, `{"success": true, "message": "Comment deleted successfully"}`)
+	}
+}
+
+// recup l'id de l'user sinon 0 car il n'est pas authentifié
+func getCurrentUserID(r *http.Request, db *sql.DB) int {
+	user := GetCurrentUser(db, r)
+	if user != nil {
+		return user.ID
+	}
+	return 0
+}
+
+
+
 
 
 
