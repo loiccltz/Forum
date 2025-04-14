@@ -47,6 +47,7 @@ func main() {
 	http.Handle("/moderation/dashboard", backend.LimitRequest(http.HandlerFunc(backend.ModeratorDashboardHandler(db))))
 	http.Handle("/resolve_report", backend.LimitRequest(http.HandlerFunc(backend.ResolveReportHandler(db))))
 	http.Handle("/notification", backend.LimitRequest(http.HandlerFunc(backend.NotificationHandler(db))))
+	http.Handle("/logout", backend.LimitRequest(http.HandlerFunc(backend.LogoutHandler(db))))
 	// Mise à jour du routage
 	http.HandleFunc("/post/", func(w http.ResponseWriter, r *http.Request) {
 		path := r.URL.Path
