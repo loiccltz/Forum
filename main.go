@@ -50,6 +50,7 @@ func main() {
 	mux.Handle("/moderation/dashboard", backend.LimitRequest(http.HandlerFunc(backend.ModeratorDashboardHandler(db))))
 	mux.Handle("/resolve_report", backend.LimitRequest(http.HandlerFunc(backend.ResolveReportHandler(db))))
 	mux.Handle("/notification", backend.LimitRequest(http.HandlerFunc(backend.NotificationHandler(db))))
+	mux.Handle("/logout", backend.LimitRequest(http.HandlerFunc(backend.LogoutHandler(db))))
 
 
 	// --- Dynamic Post Routes ---
