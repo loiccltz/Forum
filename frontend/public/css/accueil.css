@@ -39,6 +39,7 @@ body {      /*corps du forum */
   color: rgb(255, 255, 255);
   padding: 20px;
   box-sizing: border-box;
+  margin-right: 20px;
 }
 
 .sidebar h2 {     /*titre de la barre latérale */
@@ -225,7 +226,7 @@ body {      /*corps du forum */
           left: 10px;
           width: 40px;
           height: 40px;
-          background: url('Forum/frontend/public/rsc/home/home.png') no-repeat center center;
+          background: url('Forum/frontend/public/src/home/home.png') no-repeat center center;
           background-size: cover;
           border: none;
           cursor: pointer;

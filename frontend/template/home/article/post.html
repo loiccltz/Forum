@@ -1,0 +1,192 @@
+{{define "post"}}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>Tech-Talks - {{.Post.Title}}</title>
+  <link rel="stylesheet" href="/frontend/public/css/accueil.css">
+  <link rel="stylesheet" href="/frontend/public/css/post.css">
+</head>
+
+<body>
+  <header>
+    <div class="banner">
+      <h1>Tech-Talks</h1>
+    </div>
+    <a class="home-button" href="/">
+      <img src="/frontend/public/src/home/home.png" alt="accueil" />
+    </a>
+    <button class="forum-button">
+      <img src="/frontend/public/src/forum/forum.png" alt="forum" />
+    </button>
+    <a class="profil-button" href="/profile">
+      <img src="/frontend/public/src/profil/pp profil sans compte.png" alt="profil" />
+    </a>
+    <button class="à-propos-button">
+      <img src="/frontend/public/src/à propos/download-1.png.png" alt="à propos" />
+    </button>
+  </header>
+
+
+  <div class="main-container">
+    <div class="post-detail" id="post-{{.Post.ID}}"> <a href="/" class="back-button">← Retour aux posts</a>
+      <h1>{{.Post.Title}}</h1>
+
+      <p><em>Par {{ .Post.AuthorName }}</em></p> <div class="categories">
+         <span>Catégories: </span>
+        {{if .Post.Categories}}
+          {{range $index, $category := .Post.Categories}}
+            <a href="/?category_id={{$category.ID}}" class="category-tag">{{$category.Name}}</a>
+          {{end}}
+        {{else}}
+          <span>Aucune catégorie</span>
+        {{end}}
+      </div>
+
+      {{if .Post.ImageURL}}
+      <div class="post-image">
+        <img src="/{{.Post.ImageURL}}" alt="{{.Post.Title}}" />
+      </div>
+      {{end}}
+
+      <div class="post-content">
+        {{.Post.Content}}
+      </div>
+
+      <div class="post-actions">
+         <form method="POST" action="/post/{{.Post.ID}}/like">
+          <input type="hidden" name="post_id_like" value="{{.Post.ID}}">
+          <input type="hidden" name="like_type" value="1">
+          <button type="submit" class="btn like">Like ({{.Likes}})</button>
+        </form>
+        <form method="POST" action="/post/{{.Post.ID}}/like">
+          <input type="hidden" name="post_id_like" value="{{.Post.ID}}">
+          <input type="hidden" name="like_type" value="0">
+          <button type="submit" class="btn dislike">Dislike ({{.Dislikes}})</button>
+        </form>
+
+         {{ if eq .CurrentUserID .Post.AuthorID }} <a href="/post/{{.Post.ID}}/edit" class="btn edit-post-btn">Éditer</a>
+            <button class="btn delete-post-btn" data-post-id="{{.Post.ID}}">Supprimer</button>
+         {{ end }}
+         </div>
+
+      <div class="comments-section">
+        <h2>Commentaires</h2>
+        <div id="comments-list"> {{if .Comments}}
+              {{range .Comments}}
+              <div class="comment" id="comment-{{.ID}}"> <p class="comment-author">{{.Username}}</p>
+                <p class="comment-content">{{.Content}}</p>
+                {{ if eq $.CurrentUserID .AuthorID }} <button class="btn-small delete-comment-btn" data-comment-id="{{.ID}}">Supprimer</button>
+                    {{ end }}
+                </div>
+              {{end}}
+            {{else}}
+              <p id="no-comments-msg">Aucun commentaire pour l'instant.</p>
+            {{end}}
+        </div>
+
+        <div class="add-comment">
+           <h3>Ajouter un commentaire</h3>
+          <form method="POST" action="/post/{{.Post.ID}}/comment">
+            <textarea name="content" rows="4" placeholder="Votre commentaire..." required></textarea>
+            <button type="submit">Envoyer</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .post-actions .btn { margin-right: 5px; } /* Add some spacing */
+    .edit-post-btn { background-color: #ffc107; color: #333; } /* Yellow */
+    .delete-post-btn, .delete-comment-btn { background-color: #dc3545; color: white; } /* Red */
+    .btn-small {
+        padding: 3px 8px;
+        font-size: 0.8em;
+        margin-left: 10px; /* Space it from comment text */
+        cursor: pointer;
+        border: none;
+        border-radius: 3px;
+    }
+  </style>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- Post Deletion ---
+        const deletePostButton = document.querySelector('.delete-post-btn');
+        if (deletePostButton) {
+            deletePostButton.addEventListener('click', (event) => {
+                const postId = event.target.dataset.postId;
+                if (confirm(`Êtes-vous sûr de vouloir supprimer ce post (${postId}) ? Cette action est irréversible.`)) {
+                    fetch(`/post/${postId}/delete`, {
+                        method: 'POST',
+                        headers: {
+                             'Content-Type': 'application/json', // Optional: backend checks method
+                             'Accept': 'application/json'
+                        }
+                        // No body needed for this simple delete via URL param
+                    })
+                    .then(response => response.json().then(data => ({ status: response.status, body: data }))) // Parse JSON and keep status
+                    .then(({ status, body }) => {
+                        if (status === 200 && body.success) {
+                            alert('Post supprimé avec succès.');
+                            window.location.href = '/'; // Redirect to homepage after successful deletion
+                        } else {
+                            console.error('Delete failed:', body);
+                            alert(`Erreur lors de la suppression du post: ${body.message || 'Erreur inconnue'}`);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error deleting post:', error);
+                        alert('Erreur réseau ou serveur lors de la suppression du post.');
+                    });
+                }
+            });
+        }
+
+        // --- Comment Deletion ---
+        const commentsList = document.getElementById('comments-list');
+        if (commentsList) {
+            commentsList.addEventListener('click', (event) => {
+                if (event.target.classList.contains('delete-comment-btn')) {
+                    const commentId = event.target.dataset.commentId;
+                    if (confirm(`Êtes-vous sûr de vouloir supprimer ce commentaire (${commentId}) ?`)) {
+                         fetch(`/comment/${commentId}/delete`, {
+                            method: 'POST',
+                             headers: {
+                                'Accept': 'application/json'
+                            }
+                        })
+                        .then(response => response.json().then(data => ({ status: response.status, body: data })))
+                        .then(({ status, body }) => {
+                            if (status === 200 && body.success) {
+                                // Remove the comment element from the page
+                                const commentElement = document.getElementById(`comment-${commentId}`);
+                                if (commentElement) {
+                                    commentElement.remove();
+                                    // Optional: Check if no comments left and show message
+                                    if (commentsList.querySelectorAll('.comment').length === 0) {
+                                        const noCommentsMsg = document.getElementById('no-comments-msg');
+                                        if (noCommentsMsg) noCommentsMsg.style.display = 'block';
+                                    }
+                                }
+                                // alert('Commentaire supprimé.'); // Optional: less intrusive just removing it
+                            } else {
+                                console.error('Delete comment failed:', body);
+                                alert(`Erreur lors de la suppression du commentaire: ${body.message || 'Erreur inconnue'}`);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error deleting comment:', error);
+                            alert('Erreur réseau ou serveur lors de la suppression du commentaire.');
+                        });
+                    }
+                }
+            });
+        }
+    });
+  </script>
+  </body>
+</html>
+{{end}}
+

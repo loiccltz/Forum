@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Éditer le Post - {{ .Title }}</title>
+    <link rel="stylesheet" href="/frontend/public/css/accueil.css"> <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+            border-radius: 8px;
+            color: #333;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            margin-top: 10px;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"], textarea {
+            margin-bottom: 15px;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 95%; /* Adjust as needed */
+        }
+        textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+        button {
+            padding: 12px 20px;
+            font-size: 16px;
+            background-color: #007bff; /* Blue */
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        a {
+            display: inline-block;
+            margin-top: 15px;
+            color: #007bff;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <h2>Éditer le Post</h2>
+
+    <form method="POST" action="/post/{{ .ID }}/edit">
+        <label for="title">Titre :</label>
+        <input type="text" id="title" name="title" value="{{ .Title }}" required>
+
+        <label for="content">Contenu :</label>
+        <textarea id="content" name="content" rows="10" required>{{ .Content }}</textarea>
+
+        <button type="submit">Enregistrer les Modifications</button>
+    </form>
+
+    <a href="/post/{{ .ID }}">Annuler et retourner au post</a>
+
+</body>
+</html>
