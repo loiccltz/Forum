@@ -1091,10 +1091,6 @@ func getCurrentUserID(r *http.Request, db *sql.DB) int {
 	return 0
 }
 
-
-
-
-=======
 func LogoutHandler(db *sql.DB) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
         cookie, err := r.Cookie("session_token")
