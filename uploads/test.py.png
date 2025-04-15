@@ -1,0 +1,26 @@
+def find_alternative_bytes(r):
+    alternatives = []
+    for b in range(256):
+        rotated = ((b >> 4) | ((b << 3) & 0xff)) & 0xff
+        if rotated == r:
+            alternatives.append(b)
+    return alternatives
+
+original_message = b"ready_play_one!"
+original_rotated = [((b >> 4) | ((b << 3) & 0xff)) & 0xff for b in original_message]
+
+# Find a position where there are alternative bytes
+new_message = list(original_message)
+for i, b in enumerate(original_message):
+    r = original_rotated[i]
+    alternatives = find_alternative_bytes(r)
+    if len(alternatives) > 1:
+        # Choose the first alternative that is different from the original
+        for alt in alternatives:
+            if alt != b:
+                new_message[i] = alt
+                break
+        break
+
+hex_message = bytes(new_message).hex()
+print(hex_message)
