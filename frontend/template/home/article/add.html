@@ -31,6 +31,14 @@
         button:hover {
             background-color: #218838;
         }
+        .categories-container {
+            margin-bottom: 15px;
+        }
+        .category-checkbox {
+            display: inline-block;
+            margin-right: 15px;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
@@ -45,6 +53,17 @@
     
         <label for="image">Image :</label>
         <input type="file" id="image" name="image" required>
+        
+        <div class="categories-container">
+            <label>Catégories (sélectionnez une ou plusieurs) :</label>
+            <div>
+                {{range .Categories}}
+                <label class="category-checkbox">
+                    <input type="checkbox" name="categories" value="{{.ID}}"> {{.Name}}
+                </label>
+                {{end}}
+            </div>
+        </div>
     
         <button type="submit">Créer le Post</button>
     </form>
