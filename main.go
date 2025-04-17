@@ -32,11 +32,11 @@ func main() {
 	defer db.Close()
 
 	fs := http.FileServer(http.Dir("./frontend/public/"))
-	mux := http.NewServeMux() // Use a mux for clarity
+	mux := http.NewServeMux()
 
-	// --- Existing Routes (adapt to use mux) ---
-	mux.Handle("/", backend.LimitRequest(http.HandlerFunc(backend.HomeHandler))) // Assuming HomeHandler is defined
-    // Add other existing handlers to mux...
+
+	mux.Handle("/", backend.LimitRequest(http.HandlerFunc(backend.HomeHandler)))
+ 
     mux.Handle("/articles", backend.LimitRequest(http.HandlerFunc(backend.ArticlesHandler())))
 	mux.Handle("/login", backend.LimitRequest(http.HandlerFunc(backend.LoginHandler(db))))
 	mux.Handle("/register", backend.LimitRequest(http.HandlerFunc(backend.RegisterHandler(db))))
@@ -53,20 +53,19 @@ func main() {
 	mux.Handle("/logout", backend.LimitRequest(http.HandlerFunc(backend.LogoutHandler(db))))
 
 
-	// --- Dynamic Post Routes ---
-	mux.HandleFunc("/post/", func(w http.ResponseWriter, r *http.Request) {
-        path := strings.TrimSuffix(r.URL.Path, "/") // Trim trailing slash
 
-        // Check for specific actions first
+	mux.HandleFunc("/post/", func(w http.ResponseWriter, r *http.Request) {
+        path := strings.TrimSuffix(r.URL.Path, "/")
+
         if strings.HasSuffix(path, "/comment") {
             backend.AddCommentHandler(db)(w, r) // POST
         } else if strings.HasSuffix(path, "/like") {
              backend.LikePostHandler(db)(w, r) // POST
         } else if strings.HasSuffix(path, "/edit") {
             if r.Method == http.MethodGet {
-                 backend.ShowEditPostFormHandler(db)(w, r) // GET - Show form
+                 backend.ShowEditPostFormHandler(db)(w, r) 
             } else if r.Method == http.MethodPost {
-                 backend.HandleEditPostHandler(db)(w, r) // POST - Process update
+                 backend.HandleEditPostHandler(db)(w, r) 
             } else {
                  http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
             }
@@ -84,10 +83,9 @@ func main() {
         if strings.HasSuffix(path, "/delete") {
             backend.DeleteCommentHandler(db)(w, r) // POST
         } else if strings.HasSuffix(path, "/edit") {
-            // Add EditCommentHandler routes here if implementing
              http.Error(w, "Comment editing not yet implemented", http.StatusNotImplemented)
         } else {
-            http.NotFound(w, r) // Or handle viewing a single comment if needed
+            http.NotFound(w, r)
         }
     })
 
@@ -116,5 +114,6 @@ func main() {
 
 	log.Println("✅ Serveur HTTPS actif : https://localhost")
 	http.Handle("/", mux) // Register the mux to handle all requests
+	log.Fatal(http.ListenAndServeTLS(":8080", "localhost+2.pem", "localhost+2-key.pem", mux))
     backend.StartSecureServer(nil) // Pass nil to use the DefaultServeMux
 }

@@ -22,14 +22,29 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
     }
     defer db.Close()
 
-    // recup les posts
-    posts, err := GetPosts(db)
-    if err != nil {
-        http.Error(w, "Error fetching posts", http.StatusInternalServerError)
-        return
+    // recup les catégorie choisi dans l'url
+    categoryName := r.URL.Query().Get("category")
+    
+    var posts []Post
+    
+    // filtrer les post SI une catégorie est selectionné
+    if categoryName != "" {
+        posts, err = GetPostsByCategoryName(db, categoryName)
+        if err != nil {
+            log.Printf("Error fetching posts by category: %v", err)
+            http.Error(w, "Error fetching filtered posts", http.StatusInternalServerError)
+            return
+        }
+    } else {
+        // Sinon, obtenir tous les posts
+        posts, err = GetPosts(db)
+        if err != nil {
+            http.Error(w, "Error fetching posts", http.StatusInternalServerError)
+            return
+        }
     }
 
-    // recup toutes les catégories (pour éventuellement filtrer)
+    // récup toutes les catégories (pour éventuellement filtrer)
     categories, err := GetCategories(db)
     if err != nil {
         http.Error(w, "Error fetching categories", http.StatusInternalServerError)
@@ -38,7 +53,7 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 
     // il faut parser les templates
     tmpl, err := template.ParseFiles(
-        "./frontend/template/home/forum/accueil.html", 
+        "./frontend/template/home/forum/accueil.html",
         "./frontend/template/home/article/posts.html",
     )
     if err != nil {
@@ -47,13 +62,15 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    // on donne les données des posts a la template
+    // on donne les données des posts et catégories à la template
     err = tmpl.ExecuteTemplate(w, "accueil", struct {
         Posts      []Post
         Categories []Category
+        Selected   string
     }{
         Posts:      posts,
         Categories: categories,
+        Selected:   categoryName,
     })
     if err != nil {
         log.Printf("Template execution error: %v", err)

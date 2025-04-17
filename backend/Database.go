@@ -3,13 +3,18 @@ package backend
 import (
 	"database/sql"
 	"fmt"
+	"log"
+	"os"
 	_ "github.com/go-sql-driver/mysql"
 )
 
 // InitDB initialise la connexion à la base de données MySQL
 func InitDB() (*sql.DB, error) {
 
-	dsn := "root:Test@tcp(127.0.0.1:3306)/forum"
+	dsn := os.Getenv("DATABASE_URL")
+	if dsn == "" {
+		log.Fatal("DATABASE_URL is not set")
+	}
 
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
@@ -39,22 +44,16 @@ func InitDB() (*sql.DB, error) {
 		return nil, fmt.Errorf(" Erreur lors de la création de la table user : %v", err)
 	}
 
-	err = AddDefaultCategories(db)
-	if err != nil {
-		db.Close()
-		return nil, fmt.Errorf("❌ Erreur lors de l'ajout des catégories par défaut : %v", err)
-	}
-
 	_, err = db.Exec(`
-		CREATE TABLE IF NOT EXISTS post (
-			id INT AUTO_INCREMENT PRIMARY KEY,
-			title VARCHAR(255) NOT NULL,
-			content TEXT NOT NULL,
-			image_url VARCHAR(255) NOT NULL,
-			author_id INT NOT NULL,
-			FOREIGN KEY (author_id) REFERENCES user(id) ON DELETE CASCADE
+	CREATE TABLE IF NOT EXISTS post (
+		id INT AUTO_INCREMENT PRIMARY KEY,
+		title VARCHAR(255) NOT NULL,
+		content TEXT NOT NULL,
+		image_url VARCHAR(255) NOT NULL,
+		author_id INT NOT NULL,
+		FOREIGN KEY (author_id) REFERENCES user(id) ON DELETE CASCADE
 		);
-	`)
+		`)
 	if err != nil {
 		db.Close()
 
@@ -65,11 +64,16 @@ func InitDB() (*sql.DB, error) {
 	    CREATE TABLE IF NOT EXISTS category (
         	id INT AUTO_INCREMENT PRIMARY KEY,
         	name VARCHAR(255) NOT NULL UNIQUE
-    	);
-	`)
+			);
+			`)
 	if err != nil {
 		db.Close()
 		return nil, fmt.Errorf("❌ Erreur lors de la création de la table category : %v", err)
+	}
+	err = AddDefaultCategories(db)
+	if err != nil {
+		db.Close()
+		return nil, fmt.Errorf("❌ Erreur lors de l'ajout des catégories par défaut : %v", err)
 	}
 
 	_, err = db.Exec(`

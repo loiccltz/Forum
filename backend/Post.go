@@ -16,6 +16,8 @@ type Post struct {
 	Categories []Category
 }
 
+
+
 func GetPostAuthor(db *sql.DB, postID int) (int, error) {
 	var authorID int
 	err := db.QueryRow("SELECT author_id FROM post WHERE id = ?", postID).Scan(&authorID)
@@ -28,8 +30,42 @@ func GetPostAuthor(db *sql.DB, postID int) (int, error) {
 	return authorID, nil
 }
 
+func GetPostsByCategoryName(db *sql.DB, categoryName string) ([]Post, error) {
+    query := `
+        SELECT p.id, p.title, p.content, p.image_url, p.author_id, u.username
+        FROM post p
+        JOIN post_category pc ON p.id = pc.post_id
+        JOIN category c ON pc.category_id = c.id
+        JOIN user u ON p.author_id = u.id
+        WHERE c.name = ?
+    `
+    rows, err := db.Query(query, categoryName)
+    if err != nil {
+        return nil, err
+    }
+    defer rows.Close()
+
+    var posts []Post
+    for rows.Next() {
+        var p Post
+        err := rows.Scan(&p.ID, &p.Title, &p.Content, &p.ImageURL, &p.AuthorID, &p.AuthorName)
+        if err != nil {
+            return nil, err
+        }
+
+        categories, err := GetPostCategories(db, p.ID)
+        if err != nil {
+            return nil, err
+        }
+        p.Categories = categories
+
+        posts = append(posts, p)
+    }
+
+    return posts, nil
+}
+
 func UpdatePost(db *sql.DB, postID int, currentUserID int, title string, content string) error {
-	// 1. Verify ownership
 	postAuthorID, err := GetPostAuthor(db, postID)
 	if err != nil {
 		return err
