@@ -3,6 +3,7 @@ package backend
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"io"
@@ -489,32 +490,69 @@ func GoogleLoginHandler() http.HandlerFunc {
 
 func GoogleCallbackHandler(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-
-		// recup le code d'autorisation
+		// Récupère le code d'autorisation
 		code := r.URL.Query().Get("code")
 
+		// Échange du code pour obtenir le token
 		token, err := googleOAuthConfig.Exchange(context.Background(), code)
-		// echange du code recup plus haut avec un token
 		if err != nil {
 			http.Error(w, "Erreur lors de l'échange du token", http.StatusInternalServerError)
 			return
 		}
 
-		// on recupere les info de l'user avec le token
+		// Crée un client HTTP avec le token
 		client := googleOAuthConfig.Client(context.Background(), token)
 		resp, err := client.Get("https://www.googleapis.com/oauth2/v2/userinfo")
 		if err != nil {
 			http.Error(w, "Erreur lors de la récupération des infos utilisateur", http.StatusInternalServerError)
 			return
 		}
-		defer resp.Body.Close() // fermer la requete ( bonne pratique )
+		defer resp.Body.Close()
 
-		userData, _ := io.ReadAll(resp.Body)
-		fmt.Println("Données utilisateur :", string(userData))
+		// Lire les données de l'utilisateur
+		userData, err := io.ReadAll(resp.Body)
+		if err != nil {
+			http.Error(w, "Erreur de lecture de la réponse", http.StatusInternalServerError)
+			return
+		}
 
+		// Décoder les données JSON
+		var user GoogleUser
+		if err := json.Unmarshal(userData, &user); err != nil {
+			http.Error(w, "Erreur lors du décodage des données utilisateur", http.StatusInternalServerError)
+			return
+		}
+
+		// Vérifier si l'utilisateur existe déjà
+		var existingUserID int
+		err = db.QueryRow("SELECT id FROM user WHERE google_id = ?", user.ID).Scan(&existingUserID)
+		if err != nil && err != sql.ErrNoRows {
+			http.Error(w, "Erreur lors de la vérification de l'utilisateur", http.StatusInternalServerError)
+			return
+		}
+
+		if err == sql.ErrNoRows {
+			// L'utilisateur n'existe pas, donc on l'insère
+			_, err = db.Exec("INSERT INTO user (google_id, email, username, role, auth_type) VALUES (?, ?, ?, ?, 'google')",user.ID, user.Email, user.GivenName, "user")
+			if err != nil {
+                log.Println("Erreur d'insertion:", err)
+				http.Error(w, "Erreur lors de l'insertion en base de données", http.StatusInternalServerError)
+				return
+			}
+		} else {
+			// L'utilisateur existe déjà, on peut mettre à jour ses informations (par exemple son email ou son nom)
+			_, err = db.Exec("UPDATE user SET email = ?, username = ?, role = ? WHERE google_id = ?",user.Email, user.Name, "user", user.ID)
+			if err != nil {
+				http.Error(w, "Erreur lors de la mise à jour des informations utilisateur", http.StatusInternalServerError)
+				return
+			}
+		}
+
+		// Rediriger l'utilisateur après l'enregistrement ou la mise à jour
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 	}
 }
+
 
 func GithubLoginHandler() http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {

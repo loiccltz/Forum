@@ -3,9 +3,9 @@ package backend
 import (
 	"database/sql"
 	"fmt"
+	_ "github.com/go-sql-driver/mysql"
 	"log"
 	"os"
-	_ "github.com/go-sql-driver/mysql"
 )
 
 // InitDB initialise la connexion à la base de données MySQL
@@ -28,17 +28,18 @@ func InitDB() (*sql.DB, error) {
 		return nil, fmt.Errorf(" Impossible de contacter la BDD : %v", err)
 	}
 
-	// Exécute la création des tables séparément
 	_, err = db.Exec(`
-		CREATE TABLE IF NOT EXISTS user (
-			id INT AUTO_INCREMENT PRIMARY KEY,
-			username VARCHAR(255) NOT NULL,
-			email VARCHAR(255) NOT NULL UNIQUE,
-			password VARCHAR(255) NOT NULL,
-			session_token VARCHAR(64) DEFAULT '' NOT NULL,
-			role ENUM('user', 'moderator', 'admin') NOT NULL DEFAULT 'user'
-		);
-	`)
+	CREATE TABLE IF NOT EXISTS user (
+		id INT AUTO_INCREMENT PRIMARY KEY,
+		username VARCHAR(255) NOT NULL,
+		email VARCHAR(255) NOT NULL UNIQUE,
+		password VARCHAR(255) NOT NULL,
+		session_token VARCHAR(64) DEFAULT '' NOT NULL,
+		role ENUM('user', 'moderator', 'admin') NOT NULL DEFAULT 'user',
+		google_id VARCHAR(255) UNIQUE,  -- Ajout de google_id pour l'authentification via Google
+		auth_type ENUM('password', 'google') DEFAULT 'password'  -- Ajout du type d'authentification
+	);
+`)
 	if err != nil {
 		db.Close()
 		return nil, fmt.Errorf(" Erreur lors de la création de la table user : %v", err)
