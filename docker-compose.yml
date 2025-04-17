@@ -16,8 +16,6 @@ services:
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: Test
-      MYSQL_USER: root
-      MYSQL_PASSWORD: password
       MYSQL_DATABASE: forum
     ports:
       - "3306:3306"

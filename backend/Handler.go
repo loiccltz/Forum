@@ -3,6 +3,7 @@ package backend
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"io"
@@ -22,14 +23,29 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
     }
     defer db.Close()
 
-    // recup les posts
-    posts, err := GetPosts(db)
-    if err != nil {
-        http.Error(w, "Error fetching posts", http.StatusInternalServerError)
-        return
+    // recup les catégorie choisi dans l'url
+    categoryName := r.URL.Query().Get("category")
+    
+    var posts []Post
+    
+    // filtrer les post SI une catégorie est selectionné
+    if categoryName != "" {
+        posts, err = GetPostsByCategoryName(db, categoryName)
+        if err != nil {
+            log.Printf("Error fetching posts by category: %v", err)
+            http.Error(w, "Error fetching filtered posts", http.StatusInternalServerError)
+            return
+        }
+    } else {
+        // Sinon, obtenir tous les posts
+        posts, err = GetPosts(db)
+        if err != nil {
+            http.Error(w, "Error fetching posts", http.StatusInternalServerError)
+            return
+        }
     }
 
-    // recup toutes les catégories (pour éventuellement filtrer)
+    // récup toutes les catégories (pour éventuellement filtrer)
     categories, err := GetCategories(db)
     if err != nil {
         http.Error(w, "Error fetching categories", http.StatusInternalServerError)
@@ -38,7 +54,7 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 
     // il faut parser les templates
     tmpl, err := template.ParseFiles(
-        "./frontend/template/home/forum/accueil.html", 
+        "./frontend/template/home/forum/accueil.html",
         "./frontend/template/home/article/posts.html",
     )
     if err != nil {
@@ -47,13 +63,15 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    // on donne les données des posts a la template
+    // on donne les données des posts et catégories à la template
     err = tmpl.ExecuteTemplate(w, "accueil", struct {
         Posts      []Post
         Categories []Category
+        Selected   string
     }{
         Posts:      posts,
         Categories: categories,
+        Selected:   categoryName,
     })
     if err != nil {
         log.Printf("Template execution error: %v", err)
@@ -472,32 +490,69 @@ func GoogleLoginHandler() http.HandlerFunc {
 
 func GoogleCallbackHandler(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-
-		// recup le code d'autorisation
+		// Récupère le code d'autorisation
 		code := r.URL.Query().Get("code")
 
+		// Échange du code pour obtenir le token
 		token, err := googleOAuthConfig.Exchange(context.Background(), code)
-		// echange du code recup plus haut avec un token
 		if err != nil {
 			http.Error(w, "Erreur lors de l'échange du token", http.StatusInternalServerError)
 			return
 		}
 
-		// on recupere les info de l'user avec le token
+		// Crée un client HTTP avec le token
 		client := googleOAuthConfig.Client(context.Background(), token)
 		resp, err := client.Get("https://www.googleapis.com/oauth2/v2/userinfo")
 		if err != nil {
 			http.Error(w, "Erreur lors de la récupération des infos utilisateur", http.StatusInternalServerError)
 			return
 		}
-		defer resp.Body.Close() // fermer la requete ( bonne pratique )
+		defer resp.Body.Close()
 
-		userData, _ := io.ReadAll(resp.Body)
-		fmt.Println("Données utilisateur :", string(userData))
+		// Lire les données de l'utilisateur
+		userData, err := io.ReadAll(resp.Body)
+		if err != nil {
+			http.Error(w, "Erreur de lecture de la réponse", http.StatusInternalServerError)
+			return
+		}
 
+		// Décoder les données JSON
+		var user GoogleUser
+		if err := json.Unmarshal(userData, &user); err != nil {
+			http.Error(w, "Erreur lors du décodage des données utilisateur", http.StatusInternalServerError)
+			return
+		}
+
+		// Vérifier si l'utilisateur existe déjà
+		var existingUserID int
+		err = db.QueryRow("SELECT id FROM user WHERE google_id = ?", user.ID).Scan(&existingUserID)
+		if err != nil && err != sql.ErrNoRows {
+			http.Error(w, "Erreur lors de la vérification de l'utilisateur", http.StatusInternalServerError)
+			return
+		}
+
+		if err == sql.ErrNoRows {
+			// L'utilisateur n'existe pas, donc on l'insère
+			_, err = db.Exec("INSERT INTO user (google_id, email, username, role, auth_type) VALUES (?, ?, ?, ?, 'google')",user.ID, user.Email, user.GivenName, "user")
+			if err != nil {
+                log.Println("Erreur d'insertion:", err)
+				http.Error(w, "Erreur lors de l'insertion en base de données", http.StatusInternalServerError)
+				return
+			}
+		} else {
+			// L'utilisateur existe déjà, on peut mettre à jour ses informations (par exemple son email ou son nom)
+			_, err = db.Exec("UPDATE user SET email = ?, username = ?, role = ? WHERE google_id = ?",user.Email, user.Name, "user", user.ID)
+			if err != nil {
+				http.Error(w, "Erreur lors de la mise à jour des informations utilisateur", http.StatusInternalServerError)
+				return
+			}
+		}
+
+		// Rediriger l'utilisateur après l'enregistrement ou la mise à jour
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 	}
 }
+
 
 func GithubLoginHandler() http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {

@@ -117,14 +117,13 @@
         if (deletePostButton) {
             deletePostButton.addEventListener('click', (event) => {
                 const postId = event.target.dataset.postId;
-                if (confirm(`Êtes-vous sûr de vouloir supprimer ce post (${postId}) ? Cette action est irréversible.`)) {
+                if (confirm(`Êtes-vous sûr de vouloir supprimer ce post ? Cette action est irréversible.`)) {
                     fetch(`/post/${postId}/delete`, {
                         method: 'POST',
                         headers: {
-                             'Content-Type': 'application/json', // Optional: backend checks method
+                             'Content-Type': 'application/json', 
                              'Accept': 'application/json'
                         }
-                        // No body needed for this simple delete via URL param
                     })
                     .then(response => response.json().then(data => ({ status: response.status, body: data }))) // Parse JSON and keep status
                     .then(({ status, body }) => {
