@@ -1,299 +1,317 @@
 body {     /* fond du forum */
-    font-family: 'Montserrat', sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #1b2838;
-  }
-  
-  header .banner {     /*bandeau du haut */
-    position: fixed;            
-    top: 0;
-    left: 0;
-    width: 100%;               
-    text-align: center;
-    background-color: #171a21;
-    color: white;
-    padding: 15px 0;
-    z-index: 100;             
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);  
-  }
-  
-  header .banner h1 {     /*titre du bandeau du haut */
-    margin: 0;
-    font-size: 2rem;
-  }
-  
-  body {      /*corps du forum */
-    padding-top: 60px;        
+  font-family: 'Montserrat', sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #1b2838;
+  padding-top: 60px;  
+}
+
+header .banner {     /*bandeau du haut */
+  position: fixed;            
+  top: 0;
+  left: 0;
+  width: 100%;               
+  text-align: center;
+  background-color: #171a21;
+  color: white;
+  padding: 15px 0;
+  z-index: 100;             
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);  
+}
+
+header .banner h1 {     /*titre du bandeau du haut */
+  margin: 0;
+  font-size: 2rem;
+}
+
+.main-container {    /*conteneur principal */
+  display: flex;
+  min-height: 100vh;
+}
+
+.content {     /*contenu principal */
+  flex: 1;
+  padding: 10px;
+  background-color: #1b2838;
+}
+
+.grille {     /*grille des éléments */
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+}
+
+.grid-item {      /*élément de la grille */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #2a475e;
+  color: white;
+  width: 200px;
+  padding: 10px;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.grid-item:hover {     /*élément de la grille */
+  transform: scale(1.05);
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.3);
+}
+
+.grid-item img {      /*image de l'élément de la grille */
+  max-width: 120px;
+  max-height: 120px;
+  border-radius: 50%;
+  margin-bottom: 10px;
+}
+
+.grid-item h2 {    /*titre de l'élément de la grille */
+  margin: 0;
+  text-align: left uppercase;
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+h2 {
+  text-align: center;
+  border: none;
+  background: #2a475e;
+  color: #fff;
+  padding: 10px;
+  border-radius: 10px;
+  margin-bottom: 50px;
+  font-size: 24px;
+  font-weight: bold;
+  max-width: 600px;
+  margin:  20px auto;
+}
+
+.home-button {     /*bouton de retour à l'accueil */
+  position: fixed;          
+  top: 15px;
+  left: 5px;
+  background-color: #2a475e;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+  z-index: 101;
+  display: flex;            
+  align-items: center;
+  gap: 10px;               
+}
+
+.home-button:hover {      /*bouton de retour à l'accueil */
+  background-color: #004E7C;
+}
+
+.home-button img {     /*image du bouton de retour à l'accueil */
+  max-width: 300px;          
+  max-height: 30px;
+}
+
+.home-button h2 {     /*titre du bouton de retour à l'accueil */
+  margin: 0;
+  text-align: left;
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.forum-button {     /*bouton de retour au forum */
+  position: fixed;          
+  top: 1px;
+  left: 53px;
+  background-color: #2a475e;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+  z-index: 101;
+  display: flex;            
+  align-items: center;
+  gap: 10px;                
+}
+
+.forum-button:hover {     /*bouton de retour au forum */
+  background-color: #004E7C;
+}
+
+.forum-button img {     /*image du bouton de retour au forum */
+  max-width: 300px;          
+  max-height: 30px;
+}
+
+.forum-button h2 {      /*titre du bouton de retour au forum */
+  margin: 0;
+  text-align: left;
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.profil-button {      /*bouton de retour au profil */
+  position: fixed;          
+  top: 15px;
+  right: 5px;
+  background-color: #2a475e;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+  z-index: 101;
+  display: flex;            
+  align-items: center;
+  gap: 10px;                
+}
+
+.profil-bouton-image {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  width: 40px;
+  height: 40px;
+  background: url('Forum/frontend/public/src/home/home.png') no-repeat center center;
+  background-size: cover;
+  border: none;
+  cursor: pointer;
   }
 
-  .main-container {    /*conteneur principal */
-    display: flex;
-    min-height: 100vh;
-  }
 
-  
-  .content {     /*contenu principal */
-    flex: 1;
-    padding: 10px;
-    background-color: #1b2838;
-  }
-  
-  .grille {     /*grille des éléments */
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    justify-content: center;
-  }
-  
-  .grid-item {      /*élément de la grille */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    background-color: #2a475e;
-    color: white;
-    width: 200px;
-    padding: 10px;
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-  }
-  
-  .grid-item:hover {     /*élément de la grille */
-    transform: scale(1.05);
-    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.3);
-  }
-  
-  .grid-item img {      /*image de l'élément de la grille */
-    max-width: 120px;
-    max-height: 120px;
-    border-radius: 50%;
-    margin-bottom: 10px;
-  }
-  
-  .grid-item h2 {    /*titre de l'élément de la grille */
-    margin: 0;
-    text-align: left uppercase;
-    font-size: 1.1rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-  }
-  
-  .home-button {     /*bouton de retour à l'accueil */
-    position: fixed;          
-    top: 15px;
-    left: 5px;
-    background-color: #2a475e;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    padding: 5px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: background-color 0.3s ease;
-    z-index: 101;
-    display: flex;            
-    align-items: center;
-    gap: 10px;               
-  }
-  
-  .home-button:hover {      /*bouton de retour à l'accueil */
-    background-color: #004E7C;
-  }
-  
-  .home-button img {     /*image du bouton de retour à l'accueil */
-    max-width: 300px;          
-    max-height: 30px;
-  }
-  
-  .home-button h2 {     /*titre du bouton de retour à l'accueil */
-    margin: 0;
-    text-align: left;
-    font-size: 1.1rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-  }
-  
-  .forum-button {     /*bouton de retour au forum */
-    position: fixed;          
-    top: 1px;
-    left: 53px;
-    background-color: #2a475e;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    padding: 5px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: background-color 0.3s ease;
-    z-index: 101;
-    display: flex;            
-    align-items: center;
-    gap: 10px;                
-  }
-  
-  .forum-button:hover {     /*bouton de retour au forum */
-    background-color: #004E7C;
-  }
-  
-  .forum-button img {     /*image du bouton de retour au forum */
-    max-width: 300px;          
-    max-height: 30px;
-  }
-  
-  .forum-button h2 {      /*titre du bouton de retour au forum */
-    margin: 0;
-    text-align: left;
-    font-size: 1.1rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-  }
-  
-  .profil-button {      /*bouton de retour au profil */
-    position: fixed;          
-    top: 15px;
-    right: 5px;
-    background-color: #2a475e;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    padding: 5px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: background-color 0.3s ease;
-    z-index: 101;
-    display: flex;            
-    align-items: center;
-    gap: 10px;                
-  }
-  
-  .profil-bouton-image {
-    position: fixed;
-    top: 10px;
-    left: 10px;
-    width: 40px;
-    height: 40px;
-    background: url('Forum/frontend/public/src/home/home.png') no-repeat center center;
-    background-size: cover;
-    border: none;
-    cursor: pointer;
-    }
+.profil-button img {      /*image du bouton de retour au profil */
+  max-width: 300px;          
+  max-height: 30px;
+}
 
-  
-  .profil-button img {      /*image du bouton de retour au profil */
-    max-width: 300px;          
-    max-height: 30px;
-  }
-  
-  .profil-button h2 {     /*titre du bouton de retour au profil */
-    margin: 0;
-    text-align: left;
-    font-size: 1.1rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-  }
-  
-  
-  
-  .à-propos-button {      /*bouton de retour à la page à propos */
-    position: fixed;          
-    top: 15px;
-    right: 50px;
-    background-color: #2a475e;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    padding: 5px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: background-color 0.3s ease;
-    z-index: 101;
-    display: flex;            
-    align-items: center;
-    gap: 10px;                
-  }
-  
-  .à-propos-button:hover {       /*bouton de retour à la page à propos */
-    background-color: #004E7C;
-  }
-  
-  .à-propos-button img {      /*image du bouton de retour à la page à propos */
-    max-width: 300px;          
-    max-height: 30px;
-  }
-  
-  .à-propos-button h2 {     /*titre du bouton de retour à la page à propos */
-    margin: 0;
-    text-align: left;
-    font-size: 1.1rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-  }
+.profil-button h2 {     /*titre du bouton de retour au profil */
+  margin: 0;
+  text-align: left;
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
 
-  ul {
-    background-color: #2a475e;
-    width: 100%;
-    padding: 8px;
-    border: none;
-    border-radius: 5px;
-    font-size: 16px;
-    color: white;
-    max-width: 700px;
-    margin:  20px auto;
-    border: 1px solid #000000;
-  }
+
+
+.à-propos-button {      /*bouton de retour à la page à propos */
+  position: fixed;          
+  top: 15px;
+  right: 50px;
+  background-color: #2a475e;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+  z-index: 101;
+  display: flex;            
+  align-items: center;
+  gap: 10px;                
+}
+
+.à-propos-button:hover {       /*bouton de retour à la page à propos */
+  background-color: #004E7C;
+}
+
+.à-propos-button img {      /*image du bouton de retour à la page à propos */
+  max-width: 300px;          
+  max-height: 30px;
+}
+
+.à-propos-button h2 {     /*titre du bouton de retour à la page à propos */
+  margin: 0;
+  text-align: left;
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+ul {
+  background-color: #2a475e;
+  width: 100%;
+  padding: 8px;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  color: white;
+  max-width: 700px;
+  margin:  20px auto;
+  border: 1px solid #000000;
+}
+
+.tags-container {
+  margin-top: 20px;
+  text-align: center;
+  border: none;
+  background: #2a475e;
+  color: #fff;
+  padding: 10px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  font-size: 2px;
+  max-width: 500px;
+  margin:  auto;
   
-  ul1 {
-    background: #233b4e;
-    padding: 20px;
-    margin: 5px 0;
-    border-radius: 5px;
-    margin:  20px auto;
-   
-    
-    
-  }
+}
 
 form {
-    display: flex;
-    flex-direction: column;
+  display: flex;
+  flex-direction: column;
 }
 
 label {
-    margin-top: 10px;
-    margin-bottom: 5px;
-    font-weight: bold;
+  margin-top: 10px;
+  margin-bottom: 5px;
+  font-weight: bold;
 }
 
 input[type="text"], textarea {
-    margin-bottom: 15px;
-    border: 1px solid #000000;
-    padding: 10px;
-    font-size: 16px;
-    background-color: #233b4e;
-    border-radius: 4px;
-    width: 95%; 
-    color: white;
-    margin: 20px auto
+  margin-bottom: 15px;
+  border: 1px solid #000000;
+  padding: 10px;
+  font-size: 16px;
+  background-color: #233b4e;
+  border-radius: 4px;
+  width: 95%; 
+  color: white;
+  margin: 20px auto
 }
 
 textarea {
-    min-height: 150px;
-    resize: vertical;
+  min-height: 150px;
+  resize: vertical;
 }
 
 button {
-    padding: 12px 20px;
-    font-size: 16px;
-    background-color: #2a475e; /* Blue */
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-    margin:  1px auto
+  padding: 12px 20px;
+  font-size: 16px;
+  background-color: #233b4e;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  margin:  1px auto
+}
+
+.button-spacing {
+  margin-left: 10px;
 }
 
 button:hover {
-    background-color: #004E7C;
+  background-color: #004E7C;
 }

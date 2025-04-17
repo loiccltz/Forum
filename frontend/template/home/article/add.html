@@ -1,65 +1,69 @@
 <!DOCTYPE html>
 <html lang="fr">
-    <link rel="stylesheet" href="../../../public/css/add.css">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Créer un Post</title>
-    
+    <link rel="stylesheet" href="../../../public/css/add.css">
 </head>
 <body>
     <header>
-    
         <div class="banner">
-          <h1>Tech-Talks</h1>
+            <h1>Tech-Talks</h1>
         </div>
-        <a class="home-button"  href="/accueil">
-          <img src="/frontend/public/src/home/home.png" alt="Accueil">
-        </a>
-        <a class="profil-button" href="/profile">
-          <img src="/frontend/public/src/profil/pp profil sans compte-1.png" alt="Profil">
-        </a>
-        <a class="à-propos-button" href="/about">
-          <img src="/frontend/public/src/à propos/download-1.png.png" alt="À propos">
-        </a>
-      </header>
-      <h2>Créer un Post</h2>
-      <div class="contenu">
-        
-    <form action="/create_post" method="POST" enctype="multipart/form-data">
-        <label for="title">Titre :</label>
-    <br>
-       <input type="text" id="title" name="title" required>
-    <br>
-    <br>
-        <label for="content">Contenu :</label>
-    <br>
-            <textarea id="content" name="content" rows="5" required></textarea>
-    <br>
-    <br>
-         <label for="image">Image :</label>
-    <br>
-             <input type="file" id="image" name="image" required>
-    <br>    
-    <br>
-        <div class="categories-container">
-            <label>Catégories (sélectionnez une ou plusieurs) :</label>
-            <div>
-                <br>
-                {{range .Categories}}
-                <label class="category-checkbox">
-                    <input type="checkbox" name="categories" value="{{.ID}}"> {{.Name}}
-                </label>
-                {{end}}
-            </div>
-        </div>
-    </div>
 
-    <div class="tags-container">
-        <button type="submit">Créer le Post</button>
-        <a class="cancel-button" href="/frontend/template/home/forum/accueil.html">
-            <button type="button">Annuler</button>
+        <a class="home-button" href="/accueil">
+            <img src="/frontend/public/src/home/home.png" alt="Accueil">
         </a>
-    </div>
+
+        <a class="profil-button" href="/profile">
+            <img src="/frontend/public/src/profil/pp profil sans compte-1.png" alt="Profil">
+        </a>
+
+        <a class="à-propos-button" href="/about">
+            <img src="/frontend/public/src/à propos/download-1.png.png" alt="À propos">
+        </a>
+        
+    </header>
+
+        <h2>Créer un Post</h2>
+        <div class="contenu">
+            <form action="/create_post" method="POST" enctype="multipart/form-data">
+                <label for="title">Titre :</label>
+                <br>
+                <input type="text" id="title" name="title" required>
+                <br><br>
+                
+                <label for="content">Contenu :</label>
+                <br>
+                <textarea id="content" name="content" rows="5" required></textarea>
+                <br><br>
+                
+                <label for="image">Image :</label>
+                <br>
+                <input type="file" id="image" name="image" required>
+                <br><br>
+                
+                <div class="categories-container"></div>
+                    <label>Catégories (sélectionnez une ou plusieurs) :</label>
+                    <div>
+                        <br>
+                        {{range .Categories}}
+                        <label class="category-checkbox">
+                            <input type="checkbox" name="categories" value="{{.ID}}"> {{.Name}}
+                        </label>
+                        {{end}}
+                    </div>
+                </div>
+            </div>
+
+            <div class="tags-container">
+                <button type="submit">Créer le Post</button>
+                <a class="cancel-button" href="/frontend/template/home/forum/accueil.html">
+                    <br><br>
+                    <button type="button">Annuler</button>
+                </a>
+            </div>
+        </form>
 </body>
 </html>

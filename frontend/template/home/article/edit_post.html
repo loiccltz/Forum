@@ -8,38 +8,45 @@
 </head>
 <body>
     <header>
-    
         <div class="banner">
-          <h1>Tech-Talks</h1>
+            <h1>Tech-Talks</h1>
         </div>
-        <a class="home-button"  href="/accueil">
-          <img src="/frontend/public/src/home/home.png" alt="Accueil">
+        
+        <a class="home-button" href="/accueil">
+            <img src="/frontend/public/src/home/home.png" alt="Accueil">
         </a>
-        <a class="profil-button" href="/profile">
-          <img src="/frontend/public/src/profil/pp profil sans compte-1.png" alt="Profil">
-        </a>
-        <a class="à-propos-button" href="/about">
-          <img src="/frontend/public/src/à propos/download-1.png.png" alt="À propos">
-        </a>
-      </header>
-      
-    <div class="categories-container">
-     <h2>Éditer le Post</h2>
-    </div>
-     <ul>  
-    <div> <class="form-container">
-     <form method="POST" action="/post/{{ .ID }}/edit">
-        <label for="title">Titre :</label>
-        <input type="text" id="title" name="title" value="{{ .Title }}" required>
-    </div>
-        <label for="content">Contenu :</label>
-        <textarea id="content" name="content" rows="10" required>{{ .Content }}</textarea>
-    </ul>
-<ul1>
-        <button type="submit">Enregistrer les Modifications</button>
-    </form>
 
-    <button type="submit">Annuler et retourner au post<a href="/post/{{ .ID }}"></a></button>
-</ul1>
+        <a class="profil-button" href="/profile">
+            <img src="/frontend/public/src/profil/pp profil sans compte-1.png" alt="Profil">
+        </a>
+
+        <a class="à-propos-button" href="/about">
+            <img src="/frontend/public/src/à propos/download-1.png.png" alt="À propos">
+        </a>
+
+    </header>
+    
+    <div class="categories-container">
+        <h2>Éditer le Post</h2>
+    </div>
+    
+    <ul>  
+        <div class="form-container">
+            <form method="POST" action="/post/{{ .ID }}/edit">
+                <label for="title">Titre :</label>
+                <input type="text" id="title" name="title" value="{{ .Title }}" required>
+
+                <label for="content">Contenu :</label>
+                <textarea id="content" name="content" rows="10" required>{{ .Content }}</textarea>
+            </form>
+        </div>
+    </ul>
+
+    <div class="tags-container">
+      <button type="submit"> Enregistrer les Modifications </button>
+      <button type="submit"  class="button-spacing"> Annuler et retourner au post
+          <a href="/post/{{ .ID }}"></a>
+      </button>
+    </div>
 </body>
 </html>
