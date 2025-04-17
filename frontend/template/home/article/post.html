@@ -57,16 +57,16 @@
          <form method="POST" action="/post/{{.Post.ID}}/like">
           <input type="hidden" name="post_id_like" value="{{.Post.ID}}">
           <input type="hidden" name="like_type" value="1">
-          <button type="submit" class="btn like">Like ({{.Likes}})</button>
+          <button type="submit" class="btn like">Like ({{Like}})</button>
         </form>
         <form method="POST" action="/post/{{.Post.ID}}/like">
           <input type="hidden" name="post_id_like" value="{{.Post.ID}}">
           <input type="hidden" name="like_type" value="0">
-          <button type="submit" class="btn dislike">Dislike ({{.Dislikes}})</button>
+          <button type="submit" class="btn dislike">Dislike ({{Dislike}})</button>
         </form>
 
-         {{ if eq .CurrentUserID .Post.AuthorID }} <a href="/post/{{.Post.ID}}/edit" class="btn edit-post-btn">Éditer</a>
-            <button class="btn delete-post-btn" data-post-id="{{.Post.ID}}">Supprimer</button>
+         {{ if eq .CurrentUserID .Post.AuthorID }} <a href="/post/{{.Post.ID}}/edit" class="btn-edit-post-btn">Éditer</a>
+            <button class="btn-delete-post-btn" data-post-id="{{.Post.ID}}">Supprimer</button>
          {{ end }}
          </div>
 
@@ -76,9 +76,10 @@
               {{range .Comments}}
               <div class="comment" id="comment-{{.ID}}"> <p class="comment-author">{{.Username}}</p>
                 <p class="comment-content">{{.Content}}</p>
-                {{ if eq $.CurrentUserID .AuthorID }} <button class="btn-small delete-comment-btn" data-comment-id="{{.ID}}">Supprimer</button>
+                {{ if eq $.CurrentUserID .AuthorID }} 
                     {{ end }}
                 </div>
+                <button class="btn-small-delete-comment-btn" data-comment-id="{{.ID}}">Supprimer</button>
               {{end}}
             {{else}}
               <p id="no-comments-msg">Aucun commentaire pour l'instant.</p>
@@ -96,19 +97,7 @@
     </div>
   </div>
 
-  <style>
-    .post-actions .btn { margin-right: 5px; } /* Add some spacing */
-    .edit-post-btn { background-color: #ffc107; color: #333; } /* Yellow */
-    .delete-post-btn, .delete-comment-btn { background-color: #dc3545; color: white; } /* Red */
-    .btn-small {
-        padding: 3px 8px;
-        font-size: 0.8em;
-        margin-left: 10px; /* Space it from comment text */
-        cursor: pointer;
-        border: none;
-        border-radius: 3px;
-    }
-  </style>
+  
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {

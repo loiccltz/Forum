@@ -301,6 +301,8 @@ input[type="date"] {
   font-size: 16px;
   margin-top: 20px;
   transition: background-color 0.3s ease;
+  display: inline-block;
+  text-align: center;
 }
 
 .btn:hover {
@@ -325,20 +327,6 @@ input[type="date"] {
 
 .hidden {
   display: none;
-}
-
-#theme-selector {
-  margin-bottom: 20px;
-  text-align: center;
-}
-
-#theme-selector select {
-  padding: 5px;
-  font-size: 16px;
-  border-radius: 4px;
-  background-color: var(--container-bg);
-  color: var(--text-color);
-  border: 1px solid var(--border-color);
 }
 
 @media (max-width: 480px) {
