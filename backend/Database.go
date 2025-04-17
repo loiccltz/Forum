@@ -4,12 +4,16 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
+	"log"
 )
+
+var DB *sql.DB
+
 
 // InitDB initialise la connexion à la base de données MySQL
 func InitDB() (*sql.DB, error) {
 
-	dsn := "root:Test@tcp(127.0.0.1:3306)/forum"
+	dsn := "root:NOUVEAUMDP@tcp(127.0.0.1:3306)/forum?parseTime=true&loc=Local"
 
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
@@ -37,12 +41,6 @@ func InitDB() (*sql.DB, error) {
 	if err != nil {
 		db.Close()
 		return nil, fmt.Errorf(" Erreur lors de la création de la table user : %v", err)
-	}
-
-	err = AddDefaultCategories(db)
-	if err != nil {
-		db.Close()
-		return nil, fmt.Errorf("❌ Erreur lors de l'ajout des catégories par défaut : %v", err)
 	}
 
 	_, err = db.Exec(`
@@ -86,13 +84,25 @@ func InitDB() (*sql.DB, error) {
 		return nil, fmt.Errorf("❌ Erreur lors de la création de la table post_category : %v", err)
 	}
 
+	err = AddDefaultCategories(db)
+	if err != nil {
+		db.Close()
+		return nil, fmt.Errorf("❌ Erreur lors de l'ajout des catégories par défaut : %v", err)
+	}
+
 	_, err = db.Exec(`
-		CREATE TABLE IF NOT EXISTS notification (
-        	id INT AUTO_INCREMENT PRIMARY KEY,
-        	user_id INT NOT NULL,
-        	type VARCHAR(50) NOT NULL,
-        	source_id INT NOT NULL,
-        	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+		CREATE TABLE IF NOT EXISTS notifications (
+			id INT AUTO_INCREMENT PRIMARY KEY,
+			user_id INT NOT NULL,
+			trigger_user_id INT NOT NULL,
+			type VARCHAR(50) NOT NULL,
+			message TEXT NOT NULL,
+			source_id INT NOT NULL,
+			post_id INT NULL,
+			is_read BOOLEAN DEFAULT FALSE,
+			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+			FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE,
+			FOREIGN KEY (trigger_user_id) REFERENCES user(id) ON DELETE CASCADE
     	);
 	`)
 	if err != nil {
@@ -154,4 +164,66 @@ func InitDB() (*sql.DB, error) {
 
 	fmt.Println("✅ Connexion à MySQL réussie et tables créées !")
 	return db, nil
+}
+
+func GetNotificationsByUserID(db *sql.DB, userID int, limit int) ([]Notification, error) {
+	var notifications []Notification
+	query := `SELECT n.id, n.user_id, n.trigger_user_id, u.username, 
+			  n.type, n.message, n.source_id, n.is_read, n.created_at, IFNULL(n.post_id, 0) 
+			  FROM notifications n
+			  LEFT JOIN user u ON n.trigger_user_id = u.id
+			  WHERE n.user_id = ? 
+			  ORDER BY n.created_at DESC LIMIT ?`
+			  
+	rows, err := db.Query(query, userID, limit)
+	if err != nil {
+		log.Printf("Error querying notifications: %v", err)
+		return nil, err
+	}
+	defer rows.Close()
+	
+	for rows.Next() {
+		var n Notification
+		var nullablePostID sql.NullInt64
+		
+		// Changez ceci pour scanner directement dans un champ de type time.Time
+		if err := rows.Scan(&n.ID, &n.UserID, &n.TriggerUserID, &n.TriggerUsername, 
+						   &n.Type, &n.Message, &n.SourceID, &n.IsRead, &n.CreatedAt, &nullablePostID); err != nil {
+			log.Printf("Error scanning notification row: %v", err)
+			continue
+		}
+		
+		// Vérifiez si nullablePostID est non nul avant de l'assigner
+		if nullablePostID.Valid {
+			n.PostID = int(nullablePostID.Int64)
+		} else {
+			n.PostID = 0
+		}
+		
+		notifications = append(notifications, n)
+	}
+	
+	return notifications, nil
+}
+
+func CountUnreadNotifications(db *sql.DB, userID int) (int, error) {
+	var count int
+	query := "SELECT COUNT(*) FROM notifications WHERE user_id = ? AND is_read = false"
+	err := db.QueryRow(query, userID).Scan(&count)
+	if err != nil {
+		log.Printf("Error counting unread notifications: %v", err)
+		return 0, err
+	}
+	return count, nil
+}
+
+// MarkNotificationAsRead marque une notification comme lue
+func MarkNotificationAsRead(db *sql.DB, notificationID int, userID int) error {
+	query := "UPDATE notifications SET is_read = true WHERE id = ? AND user_id = ?"
+	_, err := db.Exec(query, notificationID, userID)
+	if err != nil {
+		log.Printf("Error marking notification as read: %v", err)
+		return err
+	}
+	return nil
 }

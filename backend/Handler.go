@@ -14,6 +14,8 @@ import (
 	"strings"
 )
 
+var Tmpl *template.Template
+
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
     db, err := InitDB()
     if err != nil {
@@ -581,51 +583,68 @@ func LoginHandler(db *sql.DB) http.HandlerFunc {
 }
 
 func ProfileHandler(db *sql.DB) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		// Vérifier d'abord si l'utilisateur est authentifié
-		if !IsAuthenticated(r) {
-			http.Redirect(w, r, "/login", http.StatusSeeOther)
-			return
-		}
-		
-		// Récupérer le token depuis le cookie
-		cookie, err := r.Cookie("session_token")
-		if err != nil {
-			fmt.Println("Erreur cookie:", err)
-			http.Redirect(w, r, "/login", http.StatusSeeOther)
-			return
-		}
-		
-		// Vérifier que le token n'est pas vide
-		if cookie.Value == "" {
-			fmt.Println("Token vide dans le cookie")
-			http.Redirect(w, r, "/login", http.StatusSeeOther)
-			return
-		}
+    return func(w http.ResponseWriter, r *http.Request) {
+        // 1. Authentification
+        if !IsAuthenticated(r) {
+            http.Redirect(w, r, "/login", http.StatusSeeOther)
+            return
+        }
 
-		// Récupérer les informations de l'utilisateur
-		user, err := GetUserInfoByToken(db, cookie.Value)
-		if err != nil {
-			fmt.Printf("Erreur GetUserInfoByToken: %v\n", err)
-			http.Error(w, "Erreur lors de la récupération des informations de l'utilisateur", http.StatusInternalServerError)
-			return
-		}
+        // 2. Récupérer le token
+        cookie, err := r.Cookie("session_token")
+        if err != nil || cookie.Value == "" {
+            http.Redirect(w, r, "/login", http.StatusSeeOther)
+            return
+        }
 
-		// Passer les informations de l'utilisateur à la vue
-		tmpl, err := template.ParseFiles("frontend/template/home/profile/profil.html")
-		if err != nil {
-			fmt.Printf("Erreur parsing template: %v\n", err)
-			http.Error(w, "Erreur lors du chargement de la page de profil", http.StatusInternalServerError)
-			return
-		}
+        // 3. Charger l’utilisateur
+        user, err := GetUserInfoByToken(db, cookie.Value)
+        if err != nil {
+            log.Printf("GetUserInfoByToken error: %v", err)
+            http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+            return
+        }
 
-		// Rendre la page avec les données utilisateur
-		err = tmpl.Execute(w, user)
-		if err != nil {
-			fmt.Printf("Erreur exécution template: %v\n", err)
-		}
-	}
+        // 4. Notifications
+        notifications, err := GetNotifications(user.ID, 5)
+        if err != nil {
+            log.Printf("Error fetching notifications: %v", err)
+        }
+        unreadCount := CountUnread(user.ID)
+
+        // 5. Struct de données pour le template
+        data := struct {
+            *User
+            Notifications           []Notification
+            UnreadNotificationCount int
+            SuccessMessage          string
+            ModeratorRequests       []User
+        }{
+            User:                    user,
+            Notifications:           notifications,
+            UnreadNotificationCount: unreadCount,
+            SuccessMessage:          r.URL.Query().Get("success"),
+            ModeratorRequests:       []User{},
+        }
+
+        // Si l’utilisateur est admin, charger les demandes de modération
+        if user.Role == "admin" {
+            requests, err := GetPendingModeratorRequests(db)
+            if err != nil {
+                log.Printf("Erreur récupération demandes de modération : %v", err)
+            } else {
+                data.ModeratorRequests = requests
+            }
+        }
+
+        // 6. Rendu du template
+        if err := Tmpl.ExecuteTemplate(w, "profil.html", data); err != nil {
+            log.Printf("Template exec error: %v", err)
+            http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+        }
+    }
 }
+
 
 func GetCurrentUser(db *sql.DB, r *http.Request) *User {
     cookie, err := r.Cookie("session_token")
@@ -1106,4 +1125,184 @@ func LogoutHandler(db *sql.DB) http.HandlerFunc {
         }
         http.Redirect(w, r, "/login", http.StatusSeeOther)
     }
+}
+
+// RequestModeratorHandler traite les demandes pour devenir modérateur
+func RequestModeratorHandler(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// Vérifier que la méthode est POST
+		if r.Method != http.MethodPost {
+			http.Error(w, "Méthode non autorisée", http.StatusMethodNotAllowed)
+			return
+		}
+
+		// Récupérer l'utilisateur courant
+		user := GetCurrentUser(db, r)
+		if user == nil {
+			http.Error(w, "Utilisateur non authentifié", http.StatusUnauthorized)
+			return
+		}
+
+		// Vérifier que l'utilisateur n'est pas déjà modérateur ou admin
+		if user.Role != "user" {
+			http.Error(w, "Vous avez déjà un rôle supérieur à celui d'utilisateur", http.StatusBadRequest)
+			return
+		}
+
+		// Vérifier si une demande est déjà en cours pour cet utilisateur
+		var exists bool
+		query := `SELECT EXISTS(SELECT 1 FROM notifications 
+                 WHERE type = 'moderator_request' AND source_id = ? AND message LIKE 'L\'utilisateur %demande à devenir modérateur%')`
+		err := db.QueryRow(query, user.ID).Scan(&exists)
+		if err != nil && err != sql.ErrNoRows {
+			log.Printf("Erreur lors de la vérification des demandes existantes: %v", err)
+			http.Error(w, "Erreur lors du traitement de la demande", http.StatusInternalServerError)
+			return
+		}
+
+		if exists {
+			http.Error(w, "Vous avez déjà une demande en cours", http.StatusConflict)
+			return
+		}
+
+		// Récupérer tous les administrateurs
+		rows, err := db.Query("SELECT id FROM user WHERE role = 'admin'")
+		if err != nil {
+			log.Printf("Erreur lors de la récupération des administrateurs: %v", err)
+			http.Error(w, "Erreur lors du traitement de la demande", http.StatusInternalServerError)
+			return
+		}
+		defer rows.Close()
+
+		// Pour chaque admin, créer une notification
+		adminIDs := []int{}
+		for rows.Next() {
+			var adminID int
+			if err := rows.Scan(&adminID); err != nil {
+				log.Printf("Erreur lors de la lecture des IDs des administrateurs: %v", err)
+				continue
+			}
+			adminIDs = append(adminIDs, adminID)
+		}
+
+		if len(adminIDs) == 0 {
+			http.Error(w, "Aucun administrateur trouvé pour traiter votre demande", http.StatusInternalServerError)
+			return
+		}
+
+		// Créer une notification pour chaque admin
+		message := fmt.Sprintf("L'utilisateur %s demande à devenir modérateur", user.Username)
+		for _, adminID := range adminIDs {
+			// Le type est 'moderator_request' et la source est l'ID de l'utilisateur qui fait la demande
+			err = CreateNotification(adminID, user.ID, "moderator_request", user.ID, 0, message)
+			if err != nil {
+				log.Printf("Erreur lors de la création de la notification pour l'admin %d: %v", adminID, err)
+			}
+		}
+
+		// Rediriger vers la page de profil avec un message de succès
+		http.Redirect(w, r, "/profile?success=request_sent", http.StatusSeeOther)
+	}
+}
+
+// HandleModeratorRequestHandler traite l'approbation ou le refus d'une demande de modérateur
+func HandleModeratorRequestHandler(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// Vérifier que la méthode est POST
+		if r.Method != http.MethodPost {
+			http.Error(w, "Méthode non autorisée", http.StatusMethodNotAllowed)
+			return
+		}
+
+		// Récupérer l'utilisateur courant (qui doit être admin)
+		admin := GetCurrentUser(db, r)
+		if admin == nil || !IsAdmin(admin) {
+			http.Error(w, "Accès refusé : seuls les administrateurs peuvent traiter les demandes", http.StatusForbidden)
+			return
+		}
+
+		// Récupérer les paramètres du formulaire
+		notificationID, err := strconv.Atoi(r.FormValue("notification_id"))
+		if err != nil {
+			http.Error(w, "ID de notification invalide", http.StatusBadRequest)
+			return
+		}
+
+		userID, err := strconv.Atoi(r.FormValue("user_id"))
+		if err != nil {
+			http.Error(w, "ID utilisateur invalide", http.StatusBadRequest)
+			return
+		}
+
+		action := r.FormValue("action")
+		if action != "approve" && action != "reject" {
+			http.Error(w, "Action invalide", http.StatusBadRequest)
+			return
+		}
+
+		// Récupérer l'utilisateur cible
+		var username string
+		err = db.QueryRow("SELECT username FROM user WHERE id = ?", userID).Scan(&username)
+		if err != nil {
+			http.Error(w, "Utilisateur non trouvé", http.StatusNotFound)
+			return
+		}
+
+		// Traiter la demande selon l'action
+		if action == "approve" {
+			// Mettre à jour le rôle de l'utilisateur
+			_, err = db.Exec("UPDATE user SET role = 'moderator' WHERE id = ?", userID)
+			if err != nil {
+				log.Printf("Erreur lors de la promotion de l'utilisateur %d: %v", userID, err)
+				http.Error(w, "Erreur lors de la promotion de l'utilisateur", http.StatusInternalServerError)
+				return
+			}
+
+			// Envoyer une notification à l'utilisateur pour l'informer
+			message := fmt.Sprintf("Votre demande pour devenir modérateur a été approuvée par %s", admin.Username)
+			err = CreateNotification(userID, admin.ID, "role_update", admin.ID, 0, message)
+		} else {
+			// Notifier l'utilisateur du refus
+			message := fmt.Sprintf("Votre demande pour devenir modérateur a été refusée par %s", admin.Username)
+			err = CreateNotification(userID, admin.ID, "role_update", admin.ID, 0, message)
+		}
+
+		if err != nil {
+			log.Printf("Erreur lors de la création de la notification de réponse: %v", err)
+		}
+
+		// Supprimer toutes les autres demandes en attente pour cet utilisateur
+		query := `DELETE FROM notifications 
+              WHERE type = 'moderator_request' AND source_id = ? 
+              AND id != ? AND user_id != ?`
+		_, err = db.Exec(query, userID, notificationID, admin.ID)
+		if err != nil {
+			log.Printf("Erreur lors de la suppression des autres demandes: %v", err)
+		}
+
+		// Rediriger vers la page d'accueil ou le tableau de bord admin
+		http.Redirect(w, r, "/admin", http.StatusSeeOther)
+	}
+}
+
+func ApproveModeratorRequestHandler(w http.ResponseWriter, r *http.Request) {
+    r.ParseForm()
+    userID := r.FormValue("user_id")
+    _, err := DB.Exec("UPDATE user SET role = 'moderator' WHERE id = ?", userID)
+    if err != nil {
+        http.Error(w, "Erreur lors de l'approbation", http.StatusInternalServerError)
+        return
+    }
+    http.Redirect(w, r, "/profil?success=approved", http.StatusSeeOther)
+}
+
+func RejectModeratorRequestHandler(w http.ResponseWriter, r *http.Request) {
+    r.ParseForm()
+    userID := r.FormValue("user_id")
+    _, err := DB.Exec("DELETE FROM notifications WHERE type = 'moderator_request' AND trigger_user_id = ?", userID)
+    if err != nil {
+        http.Error(w, "Erreur lors du rejet", http.StatusInternalServerError)
+        return
+    }
+    http.Redirect(w, r, "/profil?success=rejected", http.StatusSeeOther)
 }

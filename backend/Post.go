@@ -233,7 +233,7 @@ func AddComment(db *sql.DB, content string, authorID, postID int) error {
 	}
 
 	// Créer une notification pour l'auteur du post
-	err = CreateNotification(db, postAuthorID, "Nouveau commentaire sur votre post", postID)
+	err = CreateNotification(postAuthorID, authorID, "new_comment", postID, postID, "Nouveau commentaire sur votre post")
 	if err != nil {
 		return fmt.Errorf("erreur lors de la création de la notification pour le commentaire: %v", err)
 	}

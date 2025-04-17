@@ -36,22 +36,22 @@
     </style>
 </head>
 
-<body>
-    <div class="dropdown">
-        <button class="notif-button">🔔 Notifications</button>
-        <div class="dropdown-content">
-            {{ if .Notifications }}
-                {{ range .Notifications }}
-                    <div class="notif-item">
-                        <p><strong>{{ .Type }}</strong> - Source ID: {{ .SourceID }}</p>
-                        <small>{{ .CreatedAt.Format "02 Jan 2006 15:04:05" }}</small>
-                    </div>
-                {{ end }}
-            {{ else }}
-                <div class="notif-item">Aucune notification</div>
-            {{ end }}
+{{define "notification_dropdown"}}
+<div class="dropdown">
+  <button class="notif-button">🔔 Notifications</button>
+  <div class="dropdown-content">
+    {{if .Notifications}}
+      {{range .Notifications}}
+        <div class="notif-item">
+          <p><strong>{{.Type}}</strong> – Source ID: {{.SourceID}}</p>
+          <small>{{.CreatedAt.Format "02 Jan 2006 15:04:05"}}</small>
         </div>
-    </div>    
-</body>
+      {{end}}
+    {{else}}
+      <div class="notif-item">Aucune notification</div>
+    {{end}}
+  </div>
+</div>
+{{end}}
 
 </html>

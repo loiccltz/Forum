@@ -63,3 +63,21 @@ func GetUserInfoByToken(db *sql.DB, token string) (*User, error) {
 	fmt.Printf("Utilisateur trouvé: ID=%d, Username=%s\n", user.ID, user.Username)
 	return &user, nil
 }
+
+func GetPendingModeratorRequests(db *sql.DB) ([]User, error) {
+    rows, err := db.Query(`SELECT id, username, email FROM user WHERE role = 'user'`)
+    if err != nil {
+        return nil, err
+    }
+    defer rows.Close()
+
+    var users []User
+    for rows.Next() {
+        var u User
+        if err := rows.Scan(&u.ID, &u.Username, &u.Email); err != nil {
+            continue
+        }
+        users = append(users, u)
+    }
+    return users, nil
+}

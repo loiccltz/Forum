@@ -1,20 +1,32 @@
 package main
 
 import (
-	"database/sql"
-	"fmt"
-	backend "forum/backend"
-	"log"
-	"net/http"
-	"os"
-	"strings"
+    "fmt"
+    "log"
+    "net/http"
+    "os"
+    "strings"
+    "database/sql"
+    "html/template"
 
-	"github.com/joho/godotenv"
+    backend "forum/backend"
+    "github.com/joho/godotenv"
 )
 
-var db *sql.DB
+var (
+    tmpl *template.Template
+    db   *sql.DB
+)
+
+func init() {
+    tmpl = template.Must(template.ParseFiles(
+        "frontend/template/home/profile/profil.html",
+        "frontend/template/home/notification/notifications.html",
+    ))
+}
 
 func main() {
+	backend.Tmpl = tmpl
 	backend.OauthInit()
 	errs := godotenv.Load()
 	if errs != nil {
@@ -25,6 +37,7 @@ func main() {
 	fmt.Println("Client Secret:", os.Getenv("GOOGLE_CLIENT_SECRET"))
 
 	db, err := backend.InitDB()
+	backend.DB = db
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -51,7 +64,8 @@ func main() {
 	mux.Handle("/resolve_report", backend.LimitRequest(http.HandlerFunc(backend.ResolveReportHandler(db))))
 	mux.Handle("/notification", backend.LimitRequest(http.HandlerFunc(backend.NotificationHandler(db))))
 	mux.Handle("/logout", backend.LimitRequest(http.HandlerFunc(backend.LogoutHandler(db))))
-
+	mux.Handle("/request-moderator", backend.LimitRequest(http.HandlerFunc(backend.RequestModeratorHandler(db))))
+	mux.Handle("/handle-moderator-request", backend.LimitRequest(http.HandlerFunc(backend.HandleModeratorRequestHandler(db))))
 
 	// --- Dynamic Post Routes ---
 	mux.HandleFunc("/post/", func(w http.ResponseWriter, r *http.Request) {
