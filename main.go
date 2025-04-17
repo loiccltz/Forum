@@ -41,13 +41,10 @@ func main() {
 	mux.Handle("/login", backend.LimitRequest(http.HandlerFunc(backend.LoginHandler(db))))
 	mux.Handle("/register", backend.LimitRequest(http.HandlerFunc(backend.RegisterHandler(db))))
 	mux.Handle("/create_post", backend.LimitRequest(http.HandlerFunc(backend.CreatePostHandler(db))))
-	// mux.Handle("/add_comment", backend.LimitRequest(http.HandlerFunc(backend.AddCommentHandler(db)))) // Covered by /post/{id}/comment now
-	// mux.Handle("/like_dislike", backend.LimitRequest(http.HandlerFunc(backend.LikePostHandler(db)))) // Covered by /post/{id}/like now
 	mux.Handle("/auth/google", backend.LimitRequest(http.HandlerFunc(backend.GoogleLoginHandler())))
 	mux.Handle("/auth/google/callback", backend.LimitRequest(http.HandlerFunc(backend.GoogleCallbackHandler(db))))
 	mux.Handle("/profile", backend.LimitRequest(http.HandlerFunc(backend.ProfileHandler(db))))
 	mux.Handle("/report_post", backend.LimitRequest(http.HandlerFunc(backend.ReportPostHandler(db))))
-	mux.Handle("/moderation/dashboard", backend.LimitRequest(http.HandlerFunc(backend.ModeratorDashboardHandler(db))))
 	mux.Handle("/resolve_report", backend.LimitRequest(http.HandlerFunc(backend.ResolveReportHandler(db))))
 	mux.Handle("/notification", backend.LimitRequest(http.HandlerFunc(backend.NotificationHandler(db))))
 	mux.Handle("/logout", backend.LimitRequest(http.HandlerFunc(backend.LogoutHandler(db))))

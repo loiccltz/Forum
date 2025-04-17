@@ -778,32 +778,6 @@ func ReportPostHandler(db *sql.DB) http.HandlerFunc {
     }
 }
 
-func ModeratorDashboardHandler(db *sql.DB) http.HandlerFunc {
-    return func(w http.ResponseWriter, r *http.Request) {
-        user := GetCurrentUser(db, r)
-        
-        if !IsModerator(user) {
-            http.Error(w, "Accès refusé : seuls les modérateurs peuvent accéder à ce tableau de bord", http.StatusForbidden)
-            return
-        }
-
-        if r.Method == "GET" {
-            reports, err := GetPendingReports(db)
-            if err != nil {
-                http.Error(w, "Erreur lors de la récupération des signalements", http.StatusInternalServerError)
-                return
-            }
-
-            tmpl, err := template.ParseFiles("frontend/template/moderation/dashboard.html")
-            if err != nil {
-                http.Error(w, "Erreur lors du chargement du tableau de bord", http.StatusInternalServerError)
-                return
-            }
-
-            tmpl.Execute(w, reports)
-        }
-    }
-}
 
 func ResolveReportHandler(db *sql.DB) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
