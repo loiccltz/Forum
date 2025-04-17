@@ -3,9 +3,11 @@ package backend
 import (
 	"database/sql"
 	"fmt"
-	_ "github.com/go-sql-driver/mysql"
 	"log"
 	"os"
+
+	_ "github.com/go-sql-driver/mysql"
+	"golang.org/x/crypto/bcrypt"
 )
 
 // InitDB initialise la connexion à la base de données MySQL
@@ -159,4 +161,56 @@ func InitDB() (*sql.DB, error) {
 
 	fmt.Println("✅ Connexion à MySQL réussie et tables créées !")
 	return db, nil
+}
+
+// CreateDefaultAdmin vérifie si un admin existe et le crée sinon.
+func CreateDefaultAdmin(db *sql.DB) error {
+	defaultAdminEmail := "admin@admin.com"
+	defaultAdminUsername := "admin"
+	defaultPassword := "admin" // pour test 
+
+	// 1. Vérifier si l'admin existe déjà par email
+	var exists bool
+	err := db.QueryRow("SELECT EXISTS(SELECT 1 FROM user WHERE email = ?)", defaultAdminEmail).Scan(&exists)
+	if err != nil {
+		return fmt.Errorf("erreur lors de la vérification de l'existence de l'admin: %w", err)
+	}
+
+	if exists {
+		log.Println("ℹ️ L'utilisateur admin par défaut existe déjà.")
+		return nil 
+	}
+
+
+	err = db.QueryRow("SELECT EXISTS(SELECT 1 FROM user WHERE username = ?)", defaultAdminUsername).Scan(&exists)
+	if err != nil {
+		return fmt.Errorf("erreur lors de la vérification de l'existence du username admin: %w", err)
+	}
+    if exists {
+        log.Printf("⚠️ Le username '%s' existe déjà, impossible de créer l'admin par défaut avec ce username.", defaultAdminUsername)
+        return fmt.Errorf("le username '%s' existe déjà", defaultAdminUsername)
+    }
+
+
+	// 2. Hasher le mot de passe par défaut
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(defaultPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return fmt.Errorf("erreur lors du hashage du mot de passe admin: %w", err)
+	}
+
+	// 3. Insérer le nouvel admin
+	_, err = db.Exec("INSERT INTO user (username, email, password, role) VALUES (?, ?, ?, ?)",
+		defaultAdminUsername,
+		defaultAdminEmail,
+		string(hashedPassword),
+		RoleAdmin, // Utilise la constante RoleAdmin de roles.go
+	)
+	if err != nil {
+		return fmt.Errorf("erreur lors de l'insertion de l'admin par défaut: %w", err)
+	}
+
+	log.Printf("✅ Admin par défaut créé avec succès : email=%s, username=%s", defaultAdminEmail, defaultAdminUsername)
+	log.Printf("🔑 Mot de passe admin par défaut : %s (À CHANGER IMMÉDIATEMENT !)", defaultPassword)
+
+	return nil
 }

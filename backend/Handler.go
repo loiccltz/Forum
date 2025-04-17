@@ -1136,3 +1136,119 @@ func LogoutHandler(db *sql.DB) http.HandlerFunc {
         http.Redirect(w, r, "/login", http.StatusSeeOther)
     }
 }
+
+
+
+
+func AdminDashboardHandler(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		
+		currentUser := GetCurrentUser(db, r) // Récupère l'utilisateur connecté
+		if currentUser == nil {
+			log.Println("Accès /admin/dashboard refusé: Utilisateur non connecté")
+			http.Error(w, "Accès refusé: Connexion requise.", http.StatusUnauthorized)
+			
+			return 
+		}
+		if !IsAdmin(currentUser) { // Vérifie si l'utilisateur est admin
+			log.Printf("Accès /admin/dashboard refusé: Utilisateur ID %d (%s) n'est pas admin (Rôle: %s)\n", currentUser.ID, currentUser.Username, currentUser.Role)
+			http.Error(w, "Accès refusé: Droits administrateur requis.", http.StatusForbidden)
+			return 
+		}
+	
+
+		// Si on arrive ici, l'utilisateur est un admin connecté.
+        log.Printf("Accès /admin/dashboard autorisé pour: %s (ID: %d)", currentUser.Username, currentUser.ID)
+
+
+		// Récupérer la liste des utilisateurs
+		users, err := GetAllUsers(db)
+		if err != nil {
+			log.Printf("Erreur lors de la récupération des utilisateurs pour le dashboard admin: %v", err)
+			http.Error(w, "Erreur lors de la récupération de la liste des utilisateurs", http.StatusInternalServerError)
+			return
+		}
+
+		// Charger le template
+		tmpl, err := template.ParseFiles("./frontend/template/home/admin/admin_dashboard.html")
+		if err != nil {
+			log.Printf("Erreur lors du parsing du template admin_dashboard.html: %v", err)
+			http.Error(w, "Erreur interne du serveur (template)", http.StatusInternalServerError)
+			return
+		}
+
+		// Préparer les données pour le template
+		data := struct {
+			Users       []User
+			CurrentUserID int
+		}{
+			Users: users,
+			CurrentUserID: currentUser.ID, 
+		}
+
+		// Exécuter le template
+		err = tmpl.Execute(w, data)
+		if err != nil {
+			log.Printf("Erreur lors de l'exécution du template admin_dashboard.html: %v", err)
+			http.Error(w, "Erreur interne du serveur (render)", http.StatusInternalServerError)
+		}
+	}
+}
+
+func HandleUpdateUserRole(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			http.Error(w, "Méthode non autorisée", http.StatusMethodNotAllowed)
+			return
+		}
+
+		
+		currentUser := GetCurrentUser(db, r) 
+		if currentUser == nil {
+			log.Println("Accès /admin/update-role refusé: Utilisateur non connecté")
+			http.Error(w, "Accès refusé: Connexion requise.", http.StatusUnauthorized)
+			return 
+		}
+		if !IsAdmin(currentUser) { // Vérifie si l'utilisateur est admin
+			log.Printf("Accès /admin/update-role refusé: Utilisateur ID %d (%s) n'est pas admin (Rôle: %s)\n", currentUser.ID, currentUser.Username, currentUser.Role)
+			http.Error(w, "Accès refusé: Droits administrateur requis.", http.StatusForbidden)
+			return 
+		}
+      
+
+        log.Printf("Action /admin/update-role autorisée pour: %s (ID: %d)", currentUser.Username, currentUser.ID)
+
+
+		// Parser les donneees du formulaire
+		err := r.ParseForm()
+		if err != nil {
+			log.Printf("Erreur lors du parsing du formulaire de mise à jour de rôle: %v", err)
+			http.Error(w, "Données du formulaire invalides", http.StatusBadRequest)
+			return
+		}
+
+		userIDStr := r.FormValue("user_id")
+		newRole := r.FormValue("new_role")
+
+		// Valider l'ID utilisateur
+		targetUserID, err := strconv.Atoi(userIDStr)
+		if err != nil {
+			log.Printf("ID utilisateur invalide reçu pour la mise à jour de rôle: %s", userIDStr)
+			http.Error(w, "ID utilisateur invalide", http.StatusBadRequest)
+			return
+		}
+
+
+
+		// Mettre à jour le role dans la BDD
+		err = UpdateUserRole(db, targetUserID, newRole)
+		if err != nil {
+			http.Error(w, "Erreur lors de la mise à jour du rôle: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Rediriger vers le tableau de bord admin après succès
+		http.Redirect(w, r, "/admin/dashboard", http.StatusSeeOther)
+	}
+}

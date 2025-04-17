@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Gestion Utilisateurs</title>
+    <link rel="stylesheet" href="/frontend/public/css/accueil.css"> <style>
+        body { padding-top: 70px; /* Ajuster si la bannière prend de la place */ }
+        .admin-container { max-width: 900px; margin: 20px auto; padding: 20px; background-color: #2a475e; border-radius: 8px; color: white; }
+        .admin-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .admin-table th, .admin-table td { border: 1px solid #445a70; padding: 8px 12px; text-align: left; }
+        .admin-table th { background-color: #1d2029; }
+        .admin-table tr:nth-child(even) { background-color: #3a506b; }
+        .admin-table select { padding: 5px; background-color: #1b2838; color: white; border: 1px solid #445a70; border-radius: 4px; }
+        .admin-table button { padding: 5px 10px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9em; }
+        .admin-table button:hover { background-color: #0056b3; }
+        .current-admin-row { font-style: italic; color: #ccc; } /* Style pour la ligne de l'admin connecté */
+        .role-select { min-width: 100px; } /* Pour que le select ne soit pas trop petit */
+        .action-form { display: flex; align-items: center; gap: 10px; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="banner">
+            <h1>Tech-Talks - Admin</h1>
+        </div>
+         <a class="home-button" href="/">
+            <img src="/frontend/public/src/home/home.png" alt="Accueil Site">
+        </a>
+         <a class="profil-button" href="/profile">
+            <img src="/frontend/public/src/profil/pp profil sans compte-1.png" alt="Mon Profil">
+         </a>
+    </header>
+
+    <div class="admin-container">
+        <h2>Gestion des Utilisateurs</h2>
+
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Rôle Actuel</th>
+                    <th>Changer Rôle</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{ range .Users }}
+                <tr {{ if eq .ID $.CurrentUserID }} class="current-admin-row" {{ end }}>
+                    <td>{{ .ID }}</td>
+                    <td>{{ .Username }}</td>
+                    <td>{{ .Email }}</td>
+                    <td>{{ .Role }}</td>
+                    <td>
+                        {{/* Ne pas afficher le formulaire pour l'admin connecté lui-même */}}
+                        {{ if ne .ID $.CurrentUserID }}
+                            <form class="action-form" method="POST" action="/admin/update-role">
+                                <input type="hidden" name="user_id" value="{{ .ID }}">
+                                <select name="new_role" class="role-select">
+                                    <option value="user" {{ if eq .Role "user" }}selected{{ end }}>Utilisateur</option>
+                                    <option value="moderator" {{ if eq .Role "moderator" }}selected{{ end }}>Modérateur</option>
+                                    <option value="admin" {{ if eq .Role "admin" }}selected{{ end }}>Admin</option>
+                                </select>
+                                <button type="submit">Mettre à Jour</button>
+                            </form>
+                        {{ else }}
+                            (Vous)
+                        {{ end }}
+                    </td>
+                </tr>
+                {{ else }}
+                <tr>
+                    <td colspan="5">Aucun utilisateur trouvé.</td>
+                </tr>
+                {{ end }}
+            </tbody>
+        </table>
+    </div>
+
+</body>
+</html>
