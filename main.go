@@ -49,11 +49,10 @@ func main() {
 	mux.Handle("/notification", backend.LimitRequest(http.HandlerFunc(backend.NotificationHandler(db))))
 	mux.Handle("/logout", backend.LimitRequest(http.HandlerFunc(backend.LogoutHandler(db))))
 
-	// --- NOUVELLES ROUTES ADMIN ---
-	// Utilise AdminAuthMiddleware pour protéger ces routes
+	// route admin
 	mux.Handle("/admin/dashboard", backend.LimitRequest(http.HandlerFunc(backend.AdminDashboardHandler(db)))) // GET
 	mux.Handle("/admin/update-role", backend.LimitRequest(http.HandlerFunc(backend.HandleUpdateUserRole(db))))
-	// --- FIN NOUVELLES ROUTES ADMIN ---
+	
 
 
 
