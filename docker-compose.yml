@@ -9,14 +9,14 @@ services:
       db:
         condition: service_healthy
     environment:
-      DATABASE_URL: "user:password@tcp(db:3306)/forum"
+      DATABASE_URL: "root:Test@tcp(db:3306)/forum"
 
   db:
     image: mysql:8
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_USER: user
+      MYSQL_ROOT_PASSWORD: Test
+      MYSQL_USER: root
       MYSQL_PASSWORD: password
       MYSQL_DATABASE: forum
     ports:

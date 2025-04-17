@@ -1,0 +1,37 @@
+{{ define "posts" }}
+    <div id="artists" class="posts">
+        {{range .}}
+        <div class="post-card">
+          <a href="/post/{{.ID}}">
+            <div class="">
+              <img src="{{.ImageURL}}" alt="Norway" style="width:100%" class="">
+              <div class="">
+                <p><b>{{ .Title }}</b></p>
+                <div class="post-categories">
+                  {{if .Categories}}
+                    {{range $index, $category := .Categories}}
+                      <span class="category-pill">{{$category.Name}}</span>
+                    {{end}}
+                  {{end}}
+                </div>
+              </div>
+            </div>
+          </a>
+        </div>
+        {{end}}
+    </div>
+
+    <style>
+      .post-categories {
+        margin-top: 5px;
+      }
+      .category-pill {
+        background-color: #703535;
+        padding: 2px 6px;
+        border-radius: 10px;
+        font-size: 0.8em;
+        margin-right: 4px;
+        display: inline-block;
+      }
+    </style>
+{{ end }}

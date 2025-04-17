@@ -1,49 +1,65 @@
 <!DOCTYPE html>
 <html lang="fr">
+    <link rel="stylesheet" href="../../../public/css/add.css">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Création d'un Post et Commentaire</title>
-    <link rel="stylesheet" href="/frontend/public/css/article.css">
+    <title>Créer un Post</title>
+    
 </head>
 <body>
-
-    <h1>Créer un Post</h1>
-    <form action="/create_post" method="POST">
+    <header>
+    
+        <div class="banner">
+          <h1>Tech-Talks</h1>
+        </div>
+        <a class="home-button"  href="/accueil">
+          <img src="/frontend/public/src/home/home.png" alt="Accueil">
+        </a>
+        <a class="profil-button" href="/profile">
+          <img src="/frontend/public/src/profil/pp profil sans compte-1.png" alt="Profil">
+        </a>
+        <a class="à-propos-button" href="/about">
+          <img src="/frontend/public/src/à propos/download-1.png.png" alt="À propos">
+        </a>
+      </header>
+      <h2>Créer un Post</h2>
+      <div class="contenu">
+        
+    <form action="/create_post" method="POST" enctype="multipart/form-data">
         <label for="title">Titre :</label>
-        <input type="text" id="title" name="title" required>
-        <br>
+    <br>
+       <input type="text" id="title" name="title" required>
+    <br>
+    <br>
         <label for="content">Contenu :</label>
-        <textarea id="content" name="content" required></textarea>
-        <br>
+    <br>
+            <textarea id="content" name="content" rows="5" required></textarea>
+    <br>
+    <br>
+         <label for="image">Image :</label>
+    <br>
+             <input type="file" id="image" name="image" required>
+    <br>    
+    <br>
+        <div class="categories-container">
+            <label>Catégories (sélectionnez une ou plusieurs) :</label>
+            <div>
+                <br>
+                {{range .Categories}}
+                <label class="category-checkbox">
+                    <input type="checkbox" name="categories" value="{{.ID}}"> {{.Name}}
+                </label>
+                {{end}}
+            </div>
+        </div>
+    </div>
+
+    <div class="tags-container">
         <button type="submit">Créer le Post</button>
-    </form>
-
-    <hr>
-
-    <h1>Ajouter un Commentaire</h1>
-    <form action="/add_comment" method="POST">
-        <label for="post_id">ID du Post :</label>
-        <input type="number" id="post_id" name="post_id" required>
-        <br>
-        <label for="content">Commentaire :</label>
-        <textarea id="content" name="content" required></textarea>
-        <br>
-        <button type="submit">Ajouter un Commentaire</button>
-    </form>
-
-    <hr>
-
-    <h1>Likes / Dislikes</h1>
-    <form action="/like_dislike" method="POST">
-        <label for="post_id_like">ID du Post :</label>
-        <input type="number" id="post_id_like" name="post_id_like" required>
-        <br>
-        <label for="like_type">Type de Like (1 pour Like, 0 pour Dislike) :</label>
-        <input type="number" id="like_type" name="like_type" min="0" max="1" required>
-        <br>
-        <button type="submit">Envoyer Like / Dislike</button>
-    </form>
-
+        <a class="cancel-button" href="/frontend/template/home/forum/accueil.html">
+            <button type="button">Annuler</button>
+        </a>
+    </div>
 </body>
 </html>

@@ -28,4 +28,17 @@ func OauthInit() {
 	}
 }
 
-//mettre le reste git facebook
+var githubOAuthConfig *oauth2.Config
+
+func GithubOauthInit() {
+    githubOAuthConfig = &oauth2.Config{
+        ClientID:     os.Getenv("GITHUB_CLIENT_ID"),
+        ClientSecret: os.Getenv("GITHUB_CLIENT_SECRET"),
+        RedirectURL:  "https://localhost/auth/github/callback",
+        Scopes:       []string{"user:email"},
+        Endpoint: oauth2.Endpoint{
+            AuthURL:  "https://github.com/login/oauth/authorize",
+            TokenURL: "https://github.com/login/oauth/access_token",
+        },
+    }
+}

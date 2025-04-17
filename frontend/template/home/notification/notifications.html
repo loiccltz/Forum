@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="utf-8">
+    <title>Notifications</title>
+    <style>
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #2a475e;
+            box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+            padding: 10px;
+            border-radius: 5px;
+            min-width: 200px;
+            z-index: 1;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        .notif-item {
+            padding: 5px;
+            color: #ffffff;
+        }
+
+        .notif-item:hover {
+            background-color: #004E7C;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="dropdown">
+        <button class="notif-button">🔔 Notifications</button>
+        <div class="dropdown-content">
+            {{ if .Notifications }}
+                {{ range .Notifications }}
+                    <div class="notif-item">
+                        <p><strong>{{ .Type }}</strong> - Source ID: {{ .SourceID }}</p>
+                        <small>{{ .CreatedAt.Format "02 Jan 2006 15:04:05" }}</small>
+                    </div>
+                {{ end }}
+            {{ else }}
+                <div class="notif-item">Aucune notification</div>
+            {{ end }}
+        </div>
+    </div>    
+</body>
+
+</html>
