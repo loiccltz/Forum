@@ -31,10 +31,7 @@ body {     /* fond du forum */
     display: flex;
     min-height: 100vh;
   }
-  
-  .sidebar-button:hover {    /*bouton de recherche */
-    background-color: #004E7C;
-  }
+
   
   .content {     /*contenu principal */
     flex: 1;
