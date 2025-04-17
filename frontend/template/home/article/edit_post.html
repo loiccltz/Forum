@@ -4,75 +4,42 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Éditer le Post - {{ .Title }}</title>
-    <link rel="stylesheet" href="/frontend/public/css/accueil.css"> <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 600px;
-            margin: 40px auto;
-            padding: 20px;
-            background-color: #f4f4f4;
-            border-radius: 8px;
-            color: #333;
-        }
-        form {
-            display: flex;
-            flex-direction: column;
-        }
-        label {
-            margin-top: 10px;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        input[type="text"], textarea {
-            margin-bottom: 15px;
-            padding: 10px;
-            font-size: 16px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            width: 95%; /* Adjust as needed */
-        }
-        textarea {
-            min-height: 150px;
-            resize: vertical;
-        }
-        button {
-            padding: 12px 20px;
-            font-size: 16px;
-            background-color: #007bff; /* Blue */
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background-color 0.2s ease;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-        a {
-            display: inline-block;
-            margin-top: 15px;
-            color: #007bff;
-            text-decoration: none;
-        }
-        a:hover {
-            text-decoration: underline;
-        }
-    </style>
+    <link rel="stylesheet" href="/frontend/public/css/edit.css"> 
 </head>
 <body>
-    <h2>Éditer le Post</h2>
-
-    <form method="POST" action="/post/{{ .ID }}/edit">
+    <header>
+    
+        <div class="banner">
+          <h1>Tech-Talks</h1>
+        </div>
+        <a class="home-button"  href="/accueil">
+          <img src="/frontend/public/src/home/home.png" alt="Accueil">
+        </a>
+        <a class="profil-button" href="/profile">
+          <img src="/frontend/public/src/profil/pp profil sans compte-1.png" alt="Profil">
+        </a>
+        <a class="à-propos-button" href="/about">
+          <img src="/frontend/public/src/à propos/download-1.png.png" alt="À propos">
+        </a>
+      </header>
+      
+    <div class="categories-container">
+     <h2>Éditer le Post</h2>
+    </div>
+     <ul>  
+    <div> <class="form-container">
+     <form method="POST" action="/post/{{ .ID }}/edit">
         <label for="title">Titre :</label>
         <input type="text" id="title" name="title" value="{{ .Title }}" required>
-
+    </div>
         <label for="content">Contenu :</label>
         <textarea id="content" name="content" rows="10" required>{{ .Content }}</textarea>
-
+    </ul>
+<ul1>
         <button type="submit">Enregistrer les Modifications</button>
     </form>
 
-    <a href="/post/{{ .ID }}">Annuler et retourner au post</a>
-
+    <button type="submit">Annuler et retourner au post<a href="/post/{{ .ID }}"></a></button>
+</ul1>
 </body>
 </html>
